@@ -19,21 +19,19 @@
 ./configure \
   --enable-static \
   --disable-shared \
-  --disable-debug \
   --disable-encoders \
   --disable-xz \
   --disable-xzdec \
   --disable-lzmadec \
   --disable-lzmainfo
 make clean
-make -j$(nproc)
+make -j$(nproc) && make -C tests/ossfuzz \
+    cp tests/ossfuzz/fuzz.options $OUT/ && \
+    cp tests/ossfuzz/fuzz.dict $OUT && \
+    find $SRC/xz/tests/files -name "*.xz" \
+    -exec zip -ujq $OUT/fuzz_seed_corpus.zip "{}" \;
 
-find $SRC/xz/tests/files -name "*.xz" \
-  -exec zip -ujq $OUT/fuzz_seed_corpus.zip "{}" \;
-
-$CC $CFLAGS -c $SRC/fuzz.c -I src/liblzma/api
-$CXX $CXXFLAGS -lFuzzingEngine \
-  fuzz.o -o $OUT/fuzz \
-  src/liblzma/.libs/liblzma.a
-
-cp $SRC/fuzz.dict $OUT
+#$CC $CFLAGS -c $SRC/fuzz.c -I src/liblzma/api
+#$CXX $CXXFLAGS -lFuzzingEngine \
+#  fuzz.o -o $OUT/fuzz \
+#  src/liblzma/.libs/liblzma.a
