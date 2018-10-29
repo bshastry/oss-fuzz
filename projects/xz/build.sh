@@ -26,9 +26,8 @@
   --disable-lzmadec \
   --disable-lzmainfo
 make clean
-make -j$(nproc) && make -C tests/ossfuzz && \
-    cp tests/ossfuzz/fuzz $OUT/ && \
-    cp tests/ossfuzz/fuzz.options $OUT/ && \
-    cp tests/ossfuzz/fuzz.dict $OUT && \
+make -j$(nproc) && make -C tests/ossfuzz all && \
+    cp tests/ossfuzz/config/fuzz.options $OUT/ && \
+    cp tests/ossfuzz/config/fuzz.dict $OUT && \
     find $SRC/xz/tests/files -name "*.xz" \
     -exec zip -ujq $OUT/fuzz_seed_corpus.zip "{}" \;
