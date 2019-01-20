@@ -2,11 +2,45 @@ syntax = "proto2";
 // Very simple proto description of the PNG format,
 // described at https://en.wikipedia.org/wiki/Portable_Network_Graphics
 
+
+
 message IHDR {
   required uint32 width = 1;
   required uint32 height = 2;
-  required uint32 other1 = 3;
-  required uint32 other2 = 4;  // Only 1 byte used.
+  enum bit_depth {
+    BD_ONE = 1;
+    BD_TWO = 2;
+    BD_FOUR = 4;
+    BD_EIGHT = 8;
+    BD_SIXTEEN = 16;
+    BD_MAX = 255; // BYTE_MAX
+  };
+  enum color_type {
+    CT_ZERO = 0;
+    CT_TWO = 2;
+    CT_THREE = 3;
+    CT_FOUR = 4;
+    CT_SIX = 6;
+    CT_MAX = 255; // BYTE_MAX
+  };
+  enum comp_method {
+    CM_ZERO = 0;
+    CM_MAX = 255; // BYTE_MAX
+  }
+  enum filt_method {
+    FM_ZERO = 0;
+    FM_MAX = 255; // BYTE_MAX
+  }
+  enum interlace {
+    I_ZERO = 0;
+    I_ONE = 1;
+    I_MAX = 255; // BYTE_MAX
+  }
+  required bit_depth bt = 3;
+  required color_type ct = 4;
+  required comp_method cm = 5;
+  required filt_method fm = 6;
+  required interlace i = 7;
 }
 
 message PLTE {

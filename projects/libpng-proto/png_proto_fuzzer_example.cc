@@ -58,8 +58,12 @@ std::string ProtoToPng(const PngProto &png_proto) {
   uint32_t h = std::min(ihdr.height(), 4096U);
   WriteInt(ihdr_str, w);
   WriteInt(ihdr_str, h);
-  WriteInt(ihdr_str, ihdr.other1());
-  WriteByte(ihdr_str, ihdr.other2());
+//  WriteInt(ihdr_str, ihdr.other1());
+  WriteByte(ihdr_str, ihdr.bt());
+  WriteByte(ihdr_str, ihdr.ct());
+  WriteByte(ihdr_str, ihdr.cm());
+  WriteByte(ihdr_str, ihdr.fm());
+  WriteByte(ihdr_str, ihdr.i());
   WriteChunk(all, "IHDR", ihdr_str.str());
 
   for (size_t i = 0, n = png_proto.chunks_size(); i < n; i++) {
