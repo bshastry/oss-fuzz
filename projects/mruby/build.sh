@@ -23,9 +23,9 @@ export LDFLAGS="$CFLAGS"
 rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc mruby_bytecode.proto --cpp_out=genfiles
 
 # build fuzzer harness
-$CXX $CXXFLAGS mruby_proto_fuzzer.cpp genfiles/mrb_bytecode.pb.cc \
+$CXX $CXXFLAGS mruby_proto_fuzzer.cpp genfiles/mruby_bytecode.pb.cc \
   -I genfiles -I.  -I libprotobuf-mutator/  -I LPM/external.protobuf/include \
-  -lz -lm \
+  -I mruby/include -lz -lm \
   LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
   LPM/src/libprotobuf-mutator.a \
   LPM/external.protobuf/lib/libprotobuf.a \

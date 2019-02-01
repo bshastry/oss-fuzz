@@ -9,8 +9,17 @@
 #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
 #include "mruby_bytecode.pb.h"
 
+#include <limits.h>
+#include <stdint.h>
+#include <stddef.h>
+
 static void WriteInt(std::stringstream &out, uint32_t x) {
 	x = __builtin_bswap32(x);
+	out.write((char *)&x, sizeof(x));
+}
+
+static void WriteShort(std::stringstream &out, uint16_t x) {
+	x = __builtin_bswap16(x);
 	out.write((char *)&x, sizeof(x));
 }
 
@@ -48,76 +57,80 @@ static void WriteChunk(std::stringstream &out, const char *type,
 	WriteInt(out, crc);
 }
 
-std::string ProtoToMrb(const MrbProto &mrb_proto) {
+/* Calculate CRC (CRC-16-CCITT)
+**
+**  0000_0000_0000_0000_0000_0000_0000_0000
+**          ^|------- CRC -------|- work --|
+**        carry
+*/
+#define  CRC_16_CCITT       0x11021ul        /* x^16+x^12+x^5+1 */
+#define  CRC_XOR_PATTERN    (CRC_16_CCITT << 8)
+#define  CRC_CARRY_BIT      (0x01000000)
 
-	// There are 22 bytes in RiteVM binary header
-    // if (size < 22) return 0;
+uint16_t
+calc_crc_16_ccitt(const uint8_t *src, size_t nbytes, uint16_t crc)
+{
+	size_t ibyte;
+	uint32_t ibit;
+	uint32_t crcwk = crc << 8;
 
-	std::stringstream all;
-	const unsigned char header[] = {0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
-	all.write((const char*)header, sizeof(header));
-	std::stringstream ihdr_str;
-	auto &ihdr = mrb_proto.ihdr();
-	// Avoid large images.
-	// They may have interesting bugs, but OOMs are going to kill fuzzing.
-	uint32_t w = std::min(ihdr.width(), 4096U);
-	uint32_t h = std::min(ihdr.height(), 4096U);
-	WriteInt(ihdr_str, w);
-	WriteInt(ihdr_str, h);
-	WriteInt(ihdr_str, ihdr.other1());
-	WriteByte(ihdr_str, ihdr.other2());
-	WriteChunk(all, "IHDR", ihdr_str.str());
-
-	for (size_t i = 0, n = mrb_proto.chunks_size(); i < n; i++) {
-		auto &chunk = mrb_proto.chunks(i);
-		if (chunk.has_plte()) {
-			WriteChunk(all, "PLTE", chunk.plte().data());
-		} else if (chunk.has_idat()) {
-			WriteChunk(all, "IDAT", chunk.idat().data(), true);
-		} else if (chunk.has_iccp()) {
-			std::stringstream iccp_str;
-			iccp_str << "xyz";  // don't fuzz iCCP name field.
-			WriteByte(iccp_str, 0);
-			WriteByte(iccp_str, 0);
-			auto compressed_data = Compress(chunk.iccp().data());
-			iccp_str.write(compressed_data.data(), compressed_data.size());
-			WriteChunk(all, "iCCP", iccp_str.str());
-		} else if (chunk.has_other_chunk()) {
-			auto &other_chunk = chunk.other_chunk();
-			char type[5] = {0};
-			if (other_chunk.has_known_type()) {
-				static const char * known_chunks[] = {
-						"bKGD", "cHRM", "dSIG", "eXIf", "gAMA", "hIST", "iCCP",
-						"iTXt", "pHYs", "sBIT", "sPLT", "sRGB", "sTER", "tEXt",
-						"tIME", "tRNS", "zTXt", "sCAL", "pCAL", "oFFs",
-				};
-				size_t known_chunks_size =
-						sizeof(known_chunks) / sizeof(known_chunks[0]);
-				size_t chunk_idx = other_chunk.known_type() % known_chunks_size;
-				memcpy(type, known_chunks[chunk_idx], 4);
-			} else if (other_chunk.has_unknown_type()) {
-				uint32_t unknown_type_int = other_chunk.unknown_type();
-				memcpy(type, &unknown_type_int, 4);
-			} else {
-				continue;
+	for (ibyte = 0; ibyte < nbytes; ibyte++) {
+		crcwk |= *src++;
+		for (ibit = 0; ibit < CHAR_BIT; ibit++) {
+			crcwk <<= 1;
+			if (crcwk & CRC_CARRY_BIT) {
+				crcwk ^= CRC_XOR_PATTERN;
 			}
-			type[4] = 0;
-			WriteChunk(all, type, other_chunk.data());
 		}
 	}
-	WriteChunk(all, "IEND", "");
+	return (uint16_t)(crcwk >> 8);
+}
+
+
+std::string ProtoToMrb(const MrbProto &mrb_proto) {
+
+//      struct rite_binary_header {
+//		uint8_t binary_ident[4];    /* Binary Identifier */
+//		uint8_t binary_version[4];  /* Binary Format Version */
+//		uint8_t binary_crc[2];      /* Binary CRC */
+//		uint8_t binary_size[4];     /* Binary Size */
+//		uint8_t compiler_name[4];   /* Compiler name */ /* MATZ */
+//		uint8_t compiler_version[4]; /* 0000
+//	  };
+
+	std::stringstream all;
+	const unsigned char header[] = {0x52, 0x49, 0x54, 0x45, 0x30, 0x30, 0x30, 0x36};
+	all.write((const char*)header, sizeof(header));
+
+	std::stringstream pay_str;
+	auto &data = mrb_proto.data();
+
+	// Write 2-byte CRC and 4-byte bin size followed by
+	// meta-data (compiler name/version)
+	/* We write int to a temp stringstream, we then write temp string stream
+	 * to permanent string stream
+	 */
+	uint16_t crc = calc_crc_16_ccitt((const uint8_t *)data.data(), data.size(), 0);
+	WriteShort(pay_str, crc);
+    WriteInt(pay_str, data.size());
+	// Write CRC+ bin_size into permanent stream
+	all.write(pay_str.str().data(), 6);
+	// Write compiler name/version into permanent stream
+	all.write("MATZ0000", 8);
+	// Write protobuf opaque byte stream
+	all.write(data.data(), data.size());
 
 	std::string res = all.str();
 	if (const char *dump_path = getenv("PROTO_FUZZER_DUMP_PATH")) {
-		// With libFuzzer binary run this to generate a PNG file x.png:
-		// PROTO_FUZZER_DUMP_PATH=x.png ./a.out proto-input
+		// With libFuzzer binary run this to generate an MRB file x.mrb:
+		// PROTO_FUZZER_DUMP_PATH=x.mrb ./a.out proto-input
 		std::ofstream of(dump_path);
 		of.write(res.data(), res.size());
 	}
 	return res;
 }
 
-int FuzzMRB(uint8_t *Data, size_t size) {
+int FuzzMRB(const uint8_t *Data, size_t size) {
 	mrb_state *mrb = mrb_open();
 	if (!mrb)
 		return 0;
@@ -127,6 +140,6 @@ int FuzzMRB(uint8_t *Data, size_t size) {
 }
 
 DEFINE_PROTO_FUZZER(const MrbProto &mrb_proto) {
-	auto s = ProtoToPng(mrb_proto);
-	FuzzMRB((const uint8_t*)s.data(), s.size());
+	auto s = ProtoToMrb(mrb_proto);
+	(void)FuzzMRB((const uint8_t*)s.data(), s.size());
 }
