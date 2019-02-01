@@ -127,7 +127,8 @@ std::string ProtoToMrb(const MrbProto &mrb_proto) {
 	pay_str.write("MATZ0000", 8);
 	std::string end_str = "END";
 	size_t end_str_len = end_str.size() + 1;
-	pay_str.write(data.data() + end_str.c_str(), data.size() + end_str_len);
+	pay_str.write(data.data(), data.size());
+	pay_str.write(end_str.c_str(), end_str_len);
 
 	std::stringstream crc_str;
 	uint16_t crc = calc_crc_16_ccitt((const uint8_t *)pay_str.str().data(), pay_str.str().size(), 0);
