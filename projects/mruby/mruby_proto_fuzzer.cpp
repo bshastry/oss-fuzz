@@ -110,15 +110,18 @@ std::string ProtoToMrb(const MrbProto &mrb_proto) {
 	/* We write int to a temp stringstream, we then write temp string stream
 	 * to permanent string stream
 	 */
-	uint16_t crc = calc_crc_16_ccitt((const uint8_t *)data.data(), data.size(), 0);
-	WriteShort(pay_str, crc);
-    WriteInt(pay_str, data.size());
-	// Write CRC+ bin_size into permanent stream
-	all.write(pay_str.str().data(), 6);
-	// Write compiler name/version into permanent stream
-	all.write("MATZ0000", 8);
-	// Write protobuf opaque byte stream
-	all.write(data.data(), data.size());
+	// bin_size = payload_size + header_size (=22) + END\0 (=4);
+    WriteInt(pay_str, data.size() + 22 + 4);
+	pay_str.write("MATZ0000", 8);
+	pay_str.write(data.data() + "END\0", data.size()+4);
+
+	std::stringstream crc_str;
+	uint16_t crc = calc_crc_16_ccitt((const uint8_t *)pay_str.str().data(), pay_str.str().size(), 0);
+	WriteShort(crc_str, crc);
+
+	// Write CRC+ payload
+	all.write(crc_str.str().data(), 2);
+	all.write(pay_str.str().data(), pay_str.str().size());
 
 	std::string res = all.str();
 	if (const char *dump_path = getenv("PROTO_FUZZER_DUMP_PATH")) {
