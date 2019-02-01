@@ -105,15 +105,29 @@ std::string ProtoToMrb(const MrbProto &mrb_proto) {
 	std::stringstream pay_str;
 	auto &data = mrb_proto.data();
 
-	// Write 2-byte CRC and 4-byte bin size followed by
-	// meta-data (compiler name/version)
-	/* We write int to a temp stringstream, we then write temp string stream
-	 * to permanent string stream
+	/* This is a bit tricky
+	 * First, we need to compute the checksum over the payload
+	 * The payload comprises
+	 *   - 4 byte bin_size
+	 *   - 8 bytes of compiler name ("MATZ") and version ("0000")
+	 *   - variable length data
+	 *   - 4 bytes string that signals end of data ("END\0")
+	 * Furthermore, bin_size is the sum of
+	 *   - header size (= 22 bytes)
+	 *   - size of variable length data
+	 *   - end string size (=4 bytes)
+	*/
+
+	/* First, we construct the payload. Later we compute checksum
+	 * Next, we compute the checksum of the payload
+	 * Finally, we write the crc followed by the payload into the fuzzed input
 	 */
-	// bin_size = payload_size + header_size (=22) + END\0 (=4);
+
     WriteInt(pay_str, data.size() + 22 + 4);
 	pay_str.write("MATZ0000", 8);
-	pay_str.write(data.data() + "END\0", data.size()+4);
+	std::string end_str = "END";
+	size_t end_str_len = end_str.size() + 1;
+	pay_str.write(data.data() + end_str.c_str(), data.size() + end_str_len);
 
 	std::stringstream crc_str;
 	uint16_t crc = calc_crc_16_ccitt((const uint8_t *)pay_str.str().data(), pay_str.str().size(), 0);
