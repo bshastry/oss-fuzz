@@ -2,3 +2,8 @@ homepage: "https://github.com/mruby/mruby"
 primary_contact: "matz@ruby.or.jp"
 auto_ccs:
   - "bshas3@gmail.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer

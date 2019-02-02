@@ -1,7 +1,6 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <zlib.h>  // for crc32
 
 #include <mruby.h>
 #include <mruby/irep.h>
@@ -25,36 +24,6 @@ static void WriteShort(std::stringstream &out, uint16_t x) {
 
 static void WriteByte(std::stringstream &out, uint8_t x) {
 	out.write((char *)&x, sizeof(x));
-}
-
-static std::string Compress(const std::string &s) {
-	std::string out(s.size() + 100, '\0');
-	size_t out_len = out.size();
-	compress((uint8_t *)&out[0], &out_len, (uint8_t *)s.data(), s.size());
-	out.resize(out_len);
-	return out;
-}
-
-// Chunk is written as:
-//  * 4-byte length
-//  * 4-byte type
-//  * the data itself
-//  * 4-byte crc (of type and data)
-static void WriteChunk(std::stringstream &out, const char *type,
-                       const std::string &chunk, bool compress = false) {
-	std::string compressed;
-	const std::string *s = &chunk;
-	if (compress) {
-		compressed = Compress(chunk);
-		s = &compressed;
-	}
-	uint32_t len = s->size();
-	uint32_t crc = crc32(crc32(0, (const unsigned char *)type, 4),
-	                     (const unsigned char *)s->data(), s->size());
-	WriteInt(out, len);
-	out.write(type, 4);
-	out.write(s->data(), s->size());
-	WriteInt(out, crc);
 }
 
 /* Calculate CRC (CRC-16-CCITT)
@@ -123,7 +92,7 @@ std::string ProtoToMrb(const MrbProto &mrb_proto) {
 	 * Finally, we write the crc followed by the payload into the fuzzed input
 	 */
 
-    WriteInt(pay_str, data.size() + 22 + 4);
+	WriteInt(pay_str, data.size() + 22 + 4);
 	pay_str.write("MATZ0000", 8);
 	std::string end_str = "END";
 	size_t end_str_len = end_str.size() + 1;

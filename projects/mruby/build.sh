@@ -32,12 +32,3 @@ $CXX $CXXFLAGS mruby_proto_fuzzer.cpp genfiles/mruby_bytecode.pb.cc \
   mruby/build/host/lib/libmruby.a \
   $LIB_FUZZING_ENGINE \
   -o $OUT/mruby_bytecode_proto_fuzzer
-
-#for file in $SRC/mruby*.c; do
-#name=$(basename $file .c)
-#$CC -c $CFLAGS -Iinclude \
-#     $file -o $OUT/${name}.o
-#$CXX $CXXFLAGS $OUT/${name}.o -lFuzzingEngine -lm \
-#    $SRC/mruby/build/host/lib/libmruby.a -o $OUT/${name}
-#rm -f $OUT/${name}.o
-#done
