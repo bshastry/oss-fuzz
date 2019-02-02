@@ -1,7 +1,6 @@
 syntax = "proto2";
 
+// TODO: Extend this
 message MrbProto {
     required bytes data = 1 [default = "IREP"];
 }
-
-// package fuzzer_examples;
