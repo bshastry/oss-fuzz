@@ -12,6 +12,13 @@ int FuzzRB(const uint8_t *Data, size_t size) {
 	mrb_state *mrb = mrb_open();
 	if (!mrb)
 		return 0;
+
+	char *code = malloc(size+1);
+	if (!code)
+		return 0;
+	memcpy(code, Data, size);
+	code[size] = '\0';
+
 	mrb_load_string(mrb, code);
 	mrb_close(mrb);
 	return 0;
