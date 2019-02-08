@@ -12,7 +12,10 @@ namespace ruby_fuzzer {
 
 	// Proto to Ruby.
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
-		return os << "(" << x.val() << ")";
+		if (x.has_int_lit()) return os << "(" << x.val() << ")";
+		if (x.has_str_lit()) return os << "(\"" << x.val() << "\")";
+		if (x.has_hex_lit()) return os << "(\"\\u{" << x.val() << "}\")";
+		return os << "";
 	}
 	std::ostream &operator<<(std::ostream &os, const VarRef &x) {
 		return os << "var_" << (static_cast<uint32_t>(x.varnum()) % 10);
@@ -68,7 +71,7 @@ namespace ruby_fuzzer {
 		if (x.has_ifelse())     return os << x.ifelse();
 		if (x.has_while_loop()) return os << x.while_loop();
 		if (x.has_ternary_stmt()) return os << x.ternary_stmt();
-		return os << "(void)0;\n";
+		return os << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const StatementSeq &x) {
 		for (auto &st : x.statements()) os << st;
