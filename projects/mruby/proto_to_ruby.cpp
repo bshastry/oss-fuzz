@@ -87,20 +87,16 @@ namespace ruby_fuzzer {
 	std::string FunctionToString(const Function &input) {
 		std::ostringstream os;
 		os << input;
-		if (const char *dump_path = getenv("PROTO_FUZZER_DUMP_PATH")) {
-			// With libFuzzer binary run this to generate an RB file x.rb:
-			// PROTO_FUZZER_DUMP_PATH=x.rb ./a.out proto-input
-			std::ofstream of(dump_path);
-			of.write(os.str().data(), os.str().size());
-		}
 		return os.str();
 
 	}
-	std::string ProtoToRb(const uint8_t *data, size_t size) {
-		Function message;
-		if (!message.ParsePartialFromArray(data, size))
-			return "#error invalid proto\n";
-		return FunctionToString(message);
-	}
+//	std::string ProtoToRb(const uint8_t *data, size_t size) {
+//		Function message;
+//		if (!message.ParsePartialFromArray(data, size))
+//			return "#error invalid proto\n";
+//		std::string outrb = FunctionToString(message);
+//
+//		return outrb;
+//	}
 
 } // namespace ruby_fuzzer
