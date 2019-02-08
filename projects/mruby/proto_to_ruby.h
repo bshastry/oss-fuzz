@@ -6,5 +6,5 @@ namespace ruby_fuzzer {
 	class Function;
 
 	std::string FunctionToString(const Function &input);
-	std::string ProtoToCxx(const uint8_t *data, size_t size);
+	std::string ProtoToRb(const uint8_t *data, size_t size);
 }
