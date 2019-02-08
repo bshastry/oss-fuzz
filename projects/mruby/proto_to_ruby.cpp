@@ -100,7 +100,8 @@ namespace ruby_fuzzer {
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const Function &x) {
-		return os << "def foo()\n" << x.statements() << "end\n";
+		return os << "def foo()\n" << x.statements() << "end\n"
+					<< "foo\n";
 	}
 
 // ---------------------------------
