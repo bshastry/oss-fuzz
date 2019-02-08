@@ -30,7 +30,7 @@ int FuzzRB(const uint8_t *Data, size_t size) {
 		std::ofstream of(dump_path);
 		of.write(code, size);
 	}
-
+	free(code);
 	return 0;
 }
 
