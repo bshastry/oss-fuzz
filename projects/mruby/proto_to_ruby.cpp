@@ -75,6 +75,7 @@ namespace ruby_fuzzer {
 				os << "puts " << x.arg() << "\n";
 				break;
 		}
+		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const Statement &x) {
 		if (x.has_assignment()) return os << x.assignment();
