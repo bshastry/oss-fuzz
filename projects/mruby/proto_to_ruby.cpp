@@ -15,7 +15,7 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
 		if (x.has_int_lit()) return os << "(" << x.int_lit() << ")";
 		if (x.has_str_lit()) return os << "(\'" << x.str_lit() << "\')";
-		return "\'\'"
+		return os << "\'\'";
 	}
 	std::ostream &operator<<(std::ostream &os, const VarRef &x) {
 		return os << "var_" << (static_cast<uint32_t>(x.varnum()) % 10);
