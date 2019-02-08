@@ -14,8 +14,18 @@ namespace ruby_fuzzer {
 	// Proto to Ruby.
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
 		if (x.has_int_lit()) return os << "(" << x.int_lit() << ")";
-		if (x.has_str_lit()) return os << "(\'" << x.str_lit() << "\')";
-		return os << "\'\'";
+		if (x.has_str_lit()) return os << "(\"" << x.str_lit() << "\")";
+		if (x.has_data_struct()) {
+			switch (x.data_struct()) {
+				case Const::ARRAY:
+					os << "[1, 2, 3, 4, 5]";
+					break;
+				case Const::HASH:
+					os << "{\"name\" => \"Leandro\",  \"nickname\" => \"Tk\","
+		                << "\"nationality\" => \"Brazilian\", \"age\" => 24}";
+			}
+		}
+		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const VarRef &x) {
 		return os << "var_" << (static_cast<uint32_t>(x.varnum()) % 10);
