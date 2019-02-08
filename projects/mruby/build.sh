@@ -21,8 +21,9 @@ export LDFLAGS="$CFLAGS"
 (cd $SRC/mruby; ./minirake clean && ./minirake -j$(nproc) all)
 
 rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc mruby_bytecode.proto --cpp_out=genfiles
+LPM/external.protobuf/bin/protoc ruby.proto --cpp_out=genfiles
 
-# build fuzzer harness
+# build MRB fuzzer harness
 $CXX $CXXFLAGS mruby_proto_fuzzer.cpp genfiles/mruby_bytecode.pb.cc \
   -I genfiles -I.  -I libprotobuf-mutator/  -I LPM/external.protobuf/include \
   -I mruby/include -lz -lm \
@@ -32,3 +33,14 @@ $CXX $CXXFLAGS mruby_proto_fuzzer.cpp genfiles/mruby_bytecode.pb.cc \
   mruby/build/host/lib/libmruby.a \
   $LIB_FUZZING_ENGINE \
   -o $OUT/mruby_bytecode_proto_fuzzer
+
+# build ruby fuzzer
+$CXX $CXXFLAGS mrubylang_proto_fuzzer.cpp genfiles/ruby.pb.cc proto_to_ruby.cpp \
+  -I genfiles -I.  -I libprotobuf-mutator/  -I LPM/external.protobuf/include \
+  -I mruby/include -lz -lm \
+  LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
+  LPM/src/libprotobuf-mutator.a \
+  LPM/external.protobuf/lib/libprotobuf.a \
+  mruby/build/host/lib/libmruby.a \
+  $LIB_FUZZING_ENGINE \
+  -o $OUT/mrubylang_bytecode_proto_fuzzer

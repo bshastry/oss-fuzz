@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool ruby \
 RUN git clone --depth 1 https://github.com/mruby/mruby mruby
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
-COPY build.sh *.cpp *.proto $SRC/
+COPY build.sh *.cpp *.h *.proto $SRC/
