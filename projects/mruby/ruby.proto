@@ -9,9 +9,14 @@ message Lvalue {
 }
 
 message Const {
+    enum DS {
+        ARRAY = 1;
+        HASH = 2;
+    }
     oneof const_oneof {
         int32 int_lit = 1;
         string str_lit = 2;
+        DS  data_struct = 3;
     }
 }
 
@@ -76,12 +81,23 @@ message Ternary {
     required Rvalue f_branch = 3;
 }
 
+message BuiltinFuncs {
+    enum BiF {
+        PRINT = 1;
+        PUTS = 2;
+    }
+    required BiF bifunc = 1;
+    required Rvalue arg = 2;
+}
+
+
 message Statement {
   oneof stmt_oneof {
     AssignmentStatement assignment = 1;
     IfElse              ifelse     = 2;
     While               while_loop = 3;
     Ternary             ternary_stmt = 4;
+    BuiltinFuncs        builtins = 5;
   }
 }
 

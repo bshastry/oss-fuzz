@@ -66,11 +66,22 @@ namespace ruby_fuzzer {
 		return os << "(" << x.tern_cond() << " ? "
 					<< x.t_branch() << " : " << x.f_branch() << ")\n";
 	}
+	std::ostream &operator<<(std::ostream &os, const BuiltinFuncs &x) {
+		switch (x.bifunc()) {
+			case BuiltinFuncs::PRINT:
+				os << "print " << x.arg() << "\n";
+				break;
+			case BuiltinFuncs::PUTS:
+				os << "puts " << x.arg() << "\n";
+				break;
+		}
+	}
 	std::ostream &operator<<(std::ostream &os, const Statement &x) {
 		if (x.has_assignment()) return os << x.assignment();
 		if (x.has_ifelse())     return os << x.ifelse();
 		if (x.has_while_loop()) return os << x.while_loop();
 		if (x.has_ternary_stmt()) return os << x.ternary_stmt();
+		if (x.has_builtins()) return os << x.builtins();
 		return os << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const StatementSeq &x) {
