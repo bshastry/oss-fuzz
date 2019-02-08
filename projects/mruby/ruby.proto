@@ -12,7 +12,6 @@ message Const {
     oneof const_oneof {
         int32 int_lit = 1;
         string str_lit = 2;
-        bytes hex_lit = 3;
     }
 }
 
@@ -82,7 +81,7 @@ message Statement {
     AssignmentStatement assignment = 1;
     IfElse              ifelse     = 2;
     While               while_loop = 3;
-    Ternary             ternary_stmt = 5;
+    Ternary             ternary_stmt = 4;
   }
 }
 
