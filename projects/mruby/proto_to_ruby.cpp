@@ -70,7 +70,9 @@ namespace ruby_fuzzer {
 		          << x.else_body() << "\nend\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const While &x) {
-		return os << "while " << x.cond() << "\n" << x.body() << "\nend\n";
+		return os << "while " << x.cond() << "\n" << x.body() << "\n"
+					<< "break if " << x.cond() << "\n"
+					<< "end\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const Ternary &x) {
 		return os << "(" << x.tern_cond() << " ? "
