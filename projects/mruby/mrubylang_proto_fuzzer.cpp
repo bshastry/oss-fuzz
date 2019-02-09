@@ -21,15 +21,16 @@ int FuzzRB(const uint8_t *Data, size_t size) {
 	memcpy(code, Data, size);
 	code[size] = '\0';
 
-	mrb_load_string(mrb, code);
-	mrb_close(mrb);
-
 	if (const char *dump_path = getenv("PROTO_FUZZER_DUMP_PATH")) {
 		// With libFuzzer binary run this to generate an RB file x.rb:
 		// PROTO_FUZZER_DUMP_PATH=x.rb ./a.out proto-input
 		std::ofstream of(dump_path);
 		of.write(code, size);
 	}
+
+	mrb_load_string(mrb, code);
+	mrb_close(mrb);
+
 	free(code);
 	return 0;
 }
