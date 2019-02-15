@@ -108,86 +108,96 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const Array &x) {
 		switch (x.arr_func()) {
 			case Array::FLATTEN:
-				os << ".flatten";
+				os << "[1, [2, [3, [4, [5]]]]].flatten";
 				break;
 			case Array::COMPACT:
-				os << ".compact";
+				os << "[1, [2, [3, [4, [5]]]]].compact";
 				break;
 			case Array::FETCH:
-				os << ".fetch";
+				os << "[1, [2, [3, [4, [5]]]]].fetch";
 				break;
 			case Array::FILL:
-				os << ".fill";
+				os << "[1, [2, [3, [4, [5]]]]].fill";
 				break;
 			case Array::REV:
-				os << ".reverse_each";
+				os << "[1, [2, [3, [4, [5]]]]].reverse_each";
 				break;
 			case Array::ROTATE:
-				os << ".rotate";
+				os << "[1, [2, [3, [4, [5]]]]].rotate";
 				break;
 			case Array::ROTATE_E:
-				os << ".rotate!";
+				os << "[1, [2, [3, [4, [5]]]]].rotate!";
 				break;
 			case Array::DELETEIF:
-				os << ".delete_if";
+				os << "[1, [2, [3, [4, [5]]]]].delete_if";
 				break;
 			case Array::INSERT:
-				os << ".insert";
+				os << "[1, [2, [3, [4, [5]]]]].insert";
 				break;
 			case Array::BSEARCH:
-				os << ".bsearch";
+				os << "[1, [2, [3, [4, [5]]]]].bsearch";
 				break;
 			case Array::KEEPIF:
-				os << ".keep_if";
+				os << "[1, [2, [3, [4, [5]]]]].keep_if";
 				break;
 			case Array::SELECT:
-				os << ".select";
+				os << "[1, [2, [3, [4, [5]]]]].select";
 				break;
 			case Array::VALUES_AT:
-				os << ".values_at";
+				os << "[1, [2, [3, [4, [5]]]]].values_at";
 				break;
 			case Array::BLOCK:
-				os << ".index";
+				os << "[1, [2, [3, [4, [5]]]]].index";
 				break;
 			case Array::TO_H:
-				os << ".to_h";
+				os << "[1, [2, [3, [4, [5]]]]].to_h";
 				break;
 			case Array::DIG:
-				os << ".dig";
+				os << "[1, [2, [3, [4, [5]]]]].dig";
 				break;
 			case Array::SLICE:
-				os << ".slice!";
+				os << "[1, [2, [3, [4, [5]]]]].slice!";
 				break;
 			case Array::PERM:
-				os << ".permutation";
+				os << "[1, [2, [3, [4, [5]]]]].permutation";
 				break;
 			case Array::COMB:
-				os << ".combination";
+				os << "[1, [2, [3, [4, [5]]]]].combination";
 				break;
 			case Array::TRANS:
-				os << ".transform";
+				os << "[1, [2, [3, [4, [5]]]]].transform";
 				break;
 			case Array::ASSOC:
-				os << ".assoc";
+				os << "[1, [2, [3, [4, [5]]]]].assoc";
 				break;
 			case Array::RASSOC:
-				os << ".rassoc";
+				os << "[1, [2, [3, [4, [5]]]]].rassoc";
 				break;
 		}
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const BuiltinFuncs &x) {
-		if (x.has_os()) os << x.os();
-		if (x.has_time())   os << x.time();
-		if (x.has_arr()) os << x.arr();
+		if (x.has_os())
+			os << x.os();
+		else if (x.has_time())
+			os << x.time();
+		else if (x.has_arr())
+			os << x.arr();
+		else
+			return os << "\n";
 		return os << "(" << x.arg() << ")" << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const Statement &x) {
-		if (x.has_assignment()) return os << x.assignment();
-		if (x.has_ifelse())     return os << x.ifelse();
-		if (x.has_while_loop()) return os << x.while_loop();
-		if (x.has_ternary_stmt()) return os << x.ternary_stmt();
-		if (x.has_builtins()) return os << x.builtins();
+		if (x.has_assignment())
+			return os << x.assignment();
+		else if (x.has_ifelse())
+			return os << x.ifelse();
+		else if (x.has_while_loop())
+			return os << x.while_loop();
+		else if (x.has_ternary_stmt())
+			return os << x.ternary_stmt();
+		else if (x.has_builtins())
+			return os << x.builtins();
 		return os << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const StatementSeq &x) {
