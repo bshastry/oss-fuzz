@@ -105,9 +105,81 @@ namespace ruby_fuzzer {
 		}
 		return os;
 	}
+	std::ostream &operator<<(std::ostream &os, const Array &x) {
+		switch (x.arr_func()) {
+			case Array::FLATTEN:
+				os << ".flatten";
+				break;
+			case Array::COMPACT:
+				os << ".compact";
+				break;
+			case Array::FETCH:
+				os << ".fetch";
+				break;
+			case Array::FILL:
+				os << ".fill";
+				break;
+			case Array::REV:
+				os << ".reverse_each";
+				break;
+			case Array::ROTATE:
+				os << ".rotate";
+				break;
+			case Array::ROTATE_E:
+				os << ".rotate!";
+				break;
+			case Array::DELETEIF:
+				os << ".delete_if";
+				break;
+			case Array::INSERT:
+				os << ".insert";
+				break;
+			case Array::BSEARCH:
+				os << ".bsearch";
+				break;
+			case Array::KEEPIF:
+				os << ".keep_if";
+				break;
+			case Array::SELECT:
+				os << ".select";
+				break;
+			case Array::VALUES_AT:
+				os << ".values_at";
+				break;
+			case Array::BLOCK:
+				os << ".index";
+				break;
+			case Array::TO_H:
+				os << ".to_h";
+				break;
+			case Array::DIG:
+				os << ".dig";
+				break;
+			case Array::SLICE:
+				os << ".slice!";
+				break;
+			case Array::PERM:
+				os << ".permutation";
+				break;
+			case Array::COMB:
+				os << ".combination";
+				break;
+			case Array::TRANS:
+				os << ".transform";
+				break;
+			case Array::ASSOC:
+				os << ".assoc";
+				break;
+			case Array::RASSOC:
+				os << ".rassoc";
+				break;
+		}
+		return os;
+	}
 	std::ostream &operator<<(std::ostream &os, const BuiltinFuncs &x) {
-		if (x.has_os()) return os << x.os();
-		if (x.has_t())   return os << x.t();
+		if (x.has_os()) os << x.os();
+		if (x.has_time())   os << x.time();
+		if (x.has_arr()) os << x.arr();
 		return os << "(" << x.arg() << ")" << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const Statement &x) {

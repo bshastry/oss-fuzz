@@ -99,12 +99,41 @@ message Time {
     required T_methods t_func = 1;
 }
 
+message Array {
+    enum Arr_methods {
+        FLATTEN = 1;
+        COMPACT = 2;
+        FETCH = 3;
+        FILL = 4;
+        REV = 5;
+        ROTATE = 6;
+        ROTATE_E = 7;
+        DELETEIF = 8;
+        INSERT = 9;
+        BSEARCH = 10;
+        KEEPIF = 11;
+        SELECT = 12;
+        VALUES_AT = 13;
+        BLOCK = 14;
+        TO_H = 15;
+        DIG = 16;
+        SLICE = 17;
+        PERM = 18;
+        COMB = 19;
+        TRANS = 20;
+        ASSOC = 21;
+        RASSOC = 22;
+    }
+    required Arr_methods arr_func = 1;
+}
+
 message BuiltinFuncs {
     oneof bifunc_oneof {
         ObjectSpace os = 1;
-        Time t = 2;
+        Time time = 2;
+        Array arr = 3;
     }
-    required Rvalue arg = 3;
+    required Rvalue arg = 4;
 }
 
 
