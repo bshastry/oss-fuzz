@@ -12,11 +12,13 @@ message Const {
     enum DS {
         ARRAY = 1;
         HASH = 2;
+        NIL = 3;
     }
     oneof const_oneof {
         int32 int_lit = 1;
         string str_lit = 2;
         DS  data_struct = 3;
+        bool bool_val = 4;
     }
 }
 
@@ -81,13 +83,28 @@ message Ternary {
     required Rvalue f_branch = 3;
 }
 
-message BuiltinFuncs {
-    enum BiF {
-        PRINT = 1;
-        PUTS = 2;
+message ObjectSpace {
+    enum OS_methods {
+        COUNT = 1;
+        EACH = 2;
     }
-    required BiF bifunc = 1;
-    required Rvalue arg = 2;
+    required OS_methods os_func = 1;
+}
+
+message Time {
+    enum T_methods {
+        AT = 1;
+        GM = 2;
+    }
+    required T_methods t_func = 1;
+}
+
+message BuiltinFuncs {
+    oneof bifunc_oneof {
+        ObjectSpace os = 1;
+        Time t = 2;
+    }
+    required Rvalue arg = 3;
 }
 
 

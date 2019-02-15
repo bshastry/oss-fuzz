@@ -15,6 +15,7 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
 		if (x.has_int_lit()) return os << "(" << x.int_lit() << ")";
 		if (x.has_str_lit()) return os << "(\"" << x.str_lit() << "\")";
+		if (x.has_bool_val()) return os << "(" << x.bool_val() << ")";
 		if (x.has_data_struct()) {
 			switch (x.data_struct()) {
 				case Const::ARRAY:
@@ -23,6 +24,10 @@ namespace ruby_fuzzer {
 				case Const::HASH:
 					os << "{\"name\" => \"Leandro\",  \"nickname\" => \"Tk\","
 		                << "\"nationality\" => \"Brazilian\", \"age\" => 24}";
+					break;
+				case Const::NIL:
+					os << "nil";
+					break;
 			}
 		}
 		return os;
@@ -78,16 +83,32 @@ namespace ruby_fuzzer {
 		return os << "(" << x.tern_cond() << " ? "
 					<< x.t_branch() << " : " << x.f_branch() << ")\n";
 	}
-	std::ostream &operator<<(std::ostream &os, const BuiltinFuncs &x) {
-		switch (x.bifunc()) {
-			case BuiltinFuncs::PRINT:
-				os << "print " << x.arg() << "\n";
+	std::ostream &operator<<(std::ostream &os, const ObjectSpace &x) {
+		switch (x.os_func()) {
+			case ObjectSpace::COUNT:
+				os << "ObjectSpace.count_objects";
 				break;
-			case BuiltinFuncs::PUTS:
-				os << "puts " << x.arg() << "\n";
+			case ObjectSpace::EACH:
+				os << "ObjectSpace.each_object";
 				break;
 		}
 		return os;
+	}
+	std::ostream &operator<<(std::ostream &os, const Time &x) {
+		switch (x.t_func()) {
+			case Time::AT:
+				os << "Time.at";
+				break;
+			case Time::GM:
+				os << "Time.gm";
+				break;
+		}
+		return os;
+	}
+	std::ostream &operator<<(std::ostream &os, const BuiltinFuncs &x) {
+		if (x.has_os()) return os << x.os();
+		if (x.has_t())   return os << x.t();
+		return os << "(" << x.arg() << ")" << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const Statement &x) {
 		if (x.has_assignment()) return os << x.assignment();
