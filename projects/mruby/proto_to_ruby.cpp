@@ -19,20 +19,10 @@ namespace ruby_fuzzer {
 			return os << "(\"" << x.str_lit() << "\")";
 		if (x.has_bool_val())
 			return os << "(" << x.bool_val() << ")";
-		if (x.has_data_struct()) {
-			switch (x.data_struct()) {
-				case Const::ARRAY:
-					os << "[1, 2, 3, 4, 5]";
-					break;
-				case Const::HASH:
-					os << "{\"name\" => \"Leandro\",  \"nickname\" => \"Tk\","
-		                << "\"nationality\" => \"Brazilian\", \"age\" => 24}";
-					break;
-				case Const::NIL:
-					os << "nil";
-					break;
-			}
-		}
+		if (x.has_arr_lit())
+			return os << "(" << x.arr_lit() << ")";
+		if (x.has_hash_lit())
+			return os << "(" << x.hash_lit() << ")";
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const VarRef &x) {
