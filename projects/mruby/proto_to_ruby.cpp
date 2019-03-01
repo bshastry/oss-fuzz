@@ -201,10 +201,17 @@ namespace ruby_fuzzer {
 			return os << x.ternary_stmt();
 		else if (x.has_builtins())
 			return os << x.builtins();
+		else if (x.has_blockstmt())
+			return os << x.blockstmt();
 		return os << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const StatementSeq &x) {
-		for (auto &st : x.statements()) os << st;
+		if (x.statements_size() > 0) {
+			os << "@scope ||= begin\n";
+			for (auto &st : x.statements())
+				os << st;
+			os << "end\n";
+		}
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const Function &x) {

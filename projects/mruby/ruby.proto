@@ -144,6 +144,7 @@ message Statement {
     While               while_loop = 3;
     Ternary             ternary_stmt = 4;
     BuiltinFuncs        builtins = 5;
+    StatementSeq        blockstmt = 6;
   }
 }
 
