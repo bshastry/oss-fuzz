@@ -214,8 +214,7 @@ namespace ruby_fuzzer {
 			os << x.time();
 		else if (x.has_arr())
 			os << x.arr();
-		else
-			return os << "\n";
+		return os << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const Statement &x) {
 		if (x.has_assignment())
