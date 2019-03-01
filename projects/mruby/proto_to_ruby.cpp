@@ -10,6 +10,8 @@ namespace ruby_fuzzer {
 	// Forward decls.
 	std::ostream &operator<<(std::ostream &os, const BinaryOp &x);
 	std::ostream &operator<<(std::ostream &os, const StatementSeq &x);
+	std::ostream &operator<<(std::ostream &os, const ArrType &x);
+	std::ostream &operator<<(std::ostream &os, const HashType &x);
 
 	// Proto to Ruby.
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
