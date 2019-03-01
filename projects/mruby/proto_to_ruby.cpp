@@ -119,7 +119,7 @@ namespace ruby_fuzzer {
 	}
 	std::ostream &operator<<(std::ostream &os, const HashType &x) {
 		if (x.keyval_size() > 0) {
-			int i = x.elements_size();
+			int i = x.keyval_size();
 			os << "{";
 			for (auto &e : x.keyval()) {
 				i--;
