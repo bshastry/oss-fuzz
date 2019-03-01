@@ -4,21 +4,26 @@ message VarRef {
   required int32 varnum = 1;
 }
 
-message Lvalue {
-  required VarRef varref = 1;
+message ArrType {
+    repeated Const elements = 1;
+}
+
+message KVPair {
+    required string key = 1;
+    required string val = 2;
+}
+
+message HashType {
+    repeated KVPair keyval = 1;
 }
 
 message Const {
-    enum DS {
-        ARRAY = 1;
-        HASH = 2;
-        NIL = 3;
-    }
     oneof const_oneof {
         int32 int_lit = 1;
         string str_lit = 2;
-        DS  data_struct = 3;
-        bool bool_val = 4;
+        ArrType arr_lit = 3;
+        HashType hash_lit = 4;
+        bool bool_val = 5;
     }
 }
 
@@ -55,7 +60,7 @@ message Rvalue {
 }
 
 message AssignmentStatement {
-  required Lvalue lvalue = 1;
+  required VarRef lvalue = 1;
   required Rvalue rvalue = 2;
 }
 
@@ -89,6 +94,7 @@ message ObjectSpace {
         EACH = 2;
     }
     required OS_methods os_func = 1;
+    required Rvalue os_arg = 2;
 }
 
 message Time {
@@ -97,6 +103,7 @@ message Time {
         GM = 2;
     }
     required T_methods t_func = 1;
+    required Rvalue t_arg = 2;
 }
 
 message Array {
@@ -125,6 +132,8 @@ message Array {
         RASSOC = 22;
     }
     required Arr_methods arr_func = 1;
+    required ArrType  arr_arg = 2;
+    required Rvalue   val_arg = 3;
 }
 
 message BuiltinFuncs {
@@ -133,7 +142,6 @@ message BuiltinFuncs {
         Time time = 2;
         Array arr = 3;
     }
-    required Rvalue arg = 4;
 }
 
 

@@ -14,7 +14,7 @@ namespace ruby_fuzzer {
 	// Proto to Ruby.
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
 		if (x.has_int_lit())
-			return os << "(" << x.int_lit() << ")";
+			return os << "(" << (x.int_lit() % 255) << ")";
 		if (x.has_str_lit())
 			return os << "(\"" << x.str_lit() << "\")";
 		if (x.has_bool_val())
@@ -37,9 +37,6 @@ namespace ruby_fuzzer {
 	}
 	std::ostream &operator<<(std::ostream &os, const VarRef &x) {
 		return os << "var_" << (static_cast<uint32_t>(x.varnum()) % 10);
-	}
-	std::ostream &operator<<(std::ostream &os, const Lvalue &x) {
-		return os << x.varref();
 	}
 	std::ostream &operator<<(std::ostream &os, const Rvalue &x) {
 		if (x.has_varref()) return os << x.varref();
@@ -95,7 +92,7 @@ namespace ruby_fuzzer {
 				os << "ObjectSpace.each_object";
 				break;
 		}
-		return os;
+		return os << "(" << x.os_arg() << ")" << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const Time &x) {
 		switch (x.t_func()) {
@@ -106,78 +103,117 @@ namespace ruby_fuzzer {
 				os << "Time.gm";
 				break;
 		}
+		return os << "(" << x.t_arg() << ")" << "\n";
+	}
+	std::ostream &operator<<(std::ostream &os, const ArrType &x) {
+		if (x.elements_size() > 0) {
+			int i = x.elements_size();
+			os << "[";
+			for (auto &e : x.elements()) {
+				i--;
+				if (i == 0) {
+					os << e;
+				} else {
+					os << e << ", ";
+				}
+			}
+			os << "]";
+		}
+		return os;
+	}
+	std::ostream &operator<<(std::ostream &os, const KVPair &x) {
+		os << "\"" << x.key() << "\"";
+		os << " => ";
+		os << "\"" << x.val() << "\"";
+		return os;
+	}
+	std::ostream &operator<<(std::ostream &os, const HashType &x) {
+		if (x.keyval_size() > 0) {
+			int i = x.elements_size();
+			os << "{";
+			for (auto &e : x.keyval()) {
+				i--;
+				if (i == 0) {
+					os << e;
+				}
+				else {
+					os << e << ", ";
+				}
+			}
+			os << "}";
+		}
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const Array &x) {
 		switch (x.arr_func()) {
 			case Array::FLATTEN:
-				os << "[1, [2, [3, [4, [5]]]]].flatten";
+				os <<  x.arr_arg() << ".flatten";
 				break;
 			case Array::COMPACT:
-				os << "[1, [2, [3, [4, [5]]]]].compact";
+				os <<  x.arr_arg() << ".compact";
 				break;
 			case Array::FETCH:
-				os << "[1, [2, [3, [4, [5]]]]].fetch";
+				os <<  x.arr_arg() << ".fetch";
 				break;
 			case Array::FILL:
-				os << "[1, [2, [3, [4, [5]]]]].fill";
+				os <<  x.arr_arg() << ".fill";
 				break;
 			case Array::REV:
-				os << "[1, [2, [3, [4, [5]]]]].reverse_each";
+				os <<  x.arr_arg() << ".reverse_each";
 				break;
 			case Array::ROTATE:
-				os << "[1, [2, [3, [4, [5]]]]].rotate";
+				os <<  x.arr_arg() << ".rotate";
 				break;
 			case Array::ROTATE_E:
-				os << "[1, [2, [3, [4, [5]]]]].rotate!";
+				os <<  x.arr_arg() << ".rotate!";
 				break;
 			case Array::DELETEIF:
-				os << "[1, [2, [3, [4, [5]]]]].delete_if";
+				os <<  x.arr_arg() << ".delete_if";
 				break;
 			case Array::INSERT:
-				os << "[1, [2, [3, [4, [5]]]]].insert";
+				os <<  x.arr_arg() << ".insert";
 				break;
 			case Array::BSEARCH:
-				os << "[1, [2, [3, [4, [5]]]]].bsearch";
+				os <<  x.arr_arg() << ".bsearch";
 				break;
 			case Array::KEEPIF:
-				os << "[1, [2, [3, [4, [5]]]]].keep_if";
+				os <<  x.arr_arg() << ".keep_if";
 				break;
 			case Array::SELECT:
-				os << "[1, [2, [3, [4, [5]]]]].select";
+				os <<  x.arr_arg() << ".select";
 				break;
 			case Array::VALUES_AT:
-				os << "[1, [2, [3, [4, [5]]]]].values_at";
+				os <<  x.arr_arg() << ".values_at";
 				break;
 			case Array::BLOCK:
-				os << "[1, [2, [3, [4, [5]]]]].index";
+				os <<  x.arr_arg() << ".index";
 				break;
 			case Array::TO_H:
-				os << "[1, [2, [3, [4, [5]]]]].to_h";
+				os <<  x.arr_arg() << ".to_h";
 				break;
 			case Array::DIG:
-				os << "[1, [2, [3, [4, [5]]]]].dig";
+				os <<  x.arr_arg() << ".dig";
 				break;
 			case Array::SLICE:
-				os << "[1, [2, [3, [4, [5]]]]].slice!";
+				os <<  x.arr_arg() << ".slice";
 				break;
 			case Array::PERM:
-				os << "[1, [2, [3, [4, [5]]]]].permutation";
+				os <<  x.arr_arg() << ".permutation";
 				break;
 			case Array::COMB:
-				os << "[1, [2, [3, [4, [5]]]]].combination";
+				os <<  x.arr_arg() << ".combination";
 				break;
 			case Array::TRANS:
-				os << "[1, [2, [3, [4, [5]]]]].transform";
+				os <<  x.arr_arg() << ".transform";
 				break;
 			case Array::ASSOC:
-				os << "[1, [2, [3, [4, [5]]]]].assoc";
+				os <<  x.arr_arg() << ".assoc";
 				break;
 			case Array::RASSOC:
-				os << "[1, [2, [3, [4, [5]]]]].rassoc";
+				os <<  x.arr_arg() << ".rassoc";
 				break;
 		}
-		return os;
+		return os << "(" << x.val_arg() << ")" << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const BuiltinFuncs &x) {
 		if (x.has_os())
@@ -188,7 +224,6 @@ namespace ruby_fuzzer {
 			os << x.arr();
 		else
 			return os << "\n";
-		return os << "(" << x.arg() << ")" << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const Statement &x) {
 		if (x.has_assignment())
@@ -227,13 +262,4 @@ namespace ruby_fuzzer {
 		return os.str();
 
 	}
-//	std::string ProtoToRb(const uint8_t *data, size_t size) {
-//		Function message;
-//		if (!message.ParsePartialFromArray(data, size))
-//			return "#error invalid proto\n";
-//		std::string outrb = FunctionToString(message);
-//
-//		return outrb;
-//	}
-
 } // namespace ruby_fuzzer
