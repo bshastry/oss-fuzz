@@ -20,10 +20,9 @@ message HashType {
 message Const {
     oneof const_oneof {
         int32 int_lit = 1;
-        string str_lit = 2;
-        ArrType arr_lit = 3;
-        HashType hash_lit = 4;
-        bool bool_val = 5;
+        ArrType arr_lit = 2;
+        HashType hash_lit = 3;
+        bool bool_val = 4;
     }
 }
 
