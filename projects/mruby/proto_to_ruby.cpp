@@ -15,6 +15,42 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const Array &x);
 
 	// Proto to Ruby.
+	std::ostream &operator<<(std::ostream &os, const StringExtNoArg &x) {
+		os << x.str_arg();
+		switch (x.str_op()) {
+			case StringExtNoArg::DUMP:
+				os << ".dump";
+				break;
+			case StringExtNoArg::STRIP:
+				os << ".strip";
+				break;
+			case StringExtNoArg::LSTRIP:
+				os << ".lstrip";
+				break;
+			case StringExtNoArg::RSTRIP:
+				os << ".rstrip";
+				break;
+			case StringExtNoArg::STRIPE:
+				os << ".strip!";
+				break;
+			case StringExtNoArg::LSTRIPE:
+				os << ".lstrip!";
+				break;
+			case StringExtNoArg::RSTRIPE:
+				os << ".rstrip!";
+				break;
+			case StringExtNoArg::SWAPCASE:
+				os << ".swapcase";
+				break;
+			case StringExtNoArg::SWAPCASEE:
+				os << ".swapcase!";
+				break;
+			case StringExtNoArg::SQUEEZE:
+				os << ".squeeze";
+				break;
+		}
+		return os;
+	}
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
 		if (x.has_int_lit())
 			return os << "(" << (x.int_lit() % 13) << ")";
@@ -36,6 +72,7 @@ namespace ruby_fuzzer {
 		if (x.has_cons())   return os << x.cons();
 		if (x.has_binop())  return os << x.binop();
 		if (x.has_arrop()) return os << x.arrop();
+		if (x.has_strextop()) return os << x.strextop();
 		return os << "1";
 	}
 	std::ostream &operator<<(std::ostream &os, const BinaryOp &x) {

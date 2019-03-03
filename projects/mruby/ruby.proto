@@ -17,12 +17,21 @@ message HashType {
     repeated KVPair keyval = 1;
 }
 
-message StringExt {
+message StringExtNoArg {
   enum StrExtOp {
-
+    DUMP = 0;
+    STRIP = 1;
+    LSTRIP = 2;
+    RSTRIP = 3;
+    STRIPE = 4;
+    LSTRIPE = 5;
+    RSTRIPE = 6;
+    SWAPCASE = 7;
+    SWAPCASEE = 8;
+    SQUEEZE = 9;
   }
-    required string str_arg = 1;
-    required
+  required StrExtOp str_op = 1;
+  required string str_arg = 2;
 }
 
 message Const {
@@ -65,6 +74,7 @@ message Rvalue {
     Const cons = 2;
     BinaryOp binop = 3;
     Array arrop = 4;
+    StringExtNoArg strextop = 5;
   }
 }
 
