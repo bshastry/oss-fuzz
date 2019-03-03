@@ -34,6 +34,7 @@ namespace ruby_fuzzer {
 		if (x.has_varref()) return os << x.varref();
 		if (x.has_cons())   return os << x.cons();
 		if (x.has_binop())  return os << x.binop();
+		if (x.has_arrop()) return os << x.arrop();
 		return os << "1";
 	}
 	std::ostream &operator<<(std::ostream &os, const BinaryOp &x) {
@@ -221,8 +222,6 @@ namespace ruby_fuzzer {
 			return os << x.assignment();
 		else if (x.has_ifelse())
 			return os << x.ifelse();
-//		else if (x.has_while_loop())
-//			return os << x.while_loop();
 		else if (x.has_ternary_stmt())
 			return os << x.ternary_stmt();
 		else if (x.has_builtins())
