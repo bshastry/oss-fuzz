@@ -17,6 +17,14 @@ message HashType {
     repeated KVPair keyval = 1;
 }
 
+message StringExt {
+  enum StrExtOp {
+
+  }
+    required string str_arg = 1;
+    required
+}
+
 message Const {
     oneof const_oneof {
         int32 int_lit = 1;
