@@ -23,6 +23,7 @@ message Const {
         ArrType arr_lit = 2;
         HashType hash_lit = 3;
         bool bool_val = 4;
+        string str_lit = 5;
     }
 }
 
@@ -148,10 +149,9 @@ message Statement {
   oneof stmt_oneof {
     AssignmentStatement assignment = 1;
     IfElse              ifelse     = 2;
-    While               while_loop = 3;
-    Ternary             ternary_stmt = 4;
-    BuiltinFuncs        builtins = 5;
-    StatementSeq        blockstmt = 6;
+    Ternary             ternary_stmt = 3;
+    BuiltinFuncs        builtins = 4;
+    StatementSeq        blockstmt = 5;
   }
 }
 

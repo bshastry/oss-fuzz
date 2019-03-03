@@ -17,8 +17,8 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
 		if (x.has_int_lit())
 			return os << "(" << (x.int_lit() % 13) << ")";
-//		if (x.has_str_lit())
-//			return os << "(\"" << x.str_lit() << "\")";
+		if (x.has_str_lit())
+			return os << "(\"" << x.str_lit() << "\")";
 		if (x.has_bool_val())
 			return os << "(" << x.bool_val() << ")";
 		if (x.has_arr_lit())
@@ -221,8 +221,8 @@ namespace ruby_fuzzer {
 			return os << x.assignment();
 		else if (x.has_ifelse())
 			return os << x.ifelse();
-		else if (x.has_while_loop())
-			return os << x.while_loop();
+//		else if (x.has_while_loop())
+//			return os << x.while_loop();
 		else if (x.has_ternary_stmt())
 			return os << x.ternary_stmt();
 		else if (x.has_builtins())
