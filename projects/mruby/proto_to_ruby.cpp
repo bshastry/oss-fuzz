@@ -14,17 +14,17 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const HashType &x);
 	std::ostream &operator<<(std::ostream &os, const Array &x);
 
-	std::ostream &operator<<(std::ostream &os, const std::string &x) {
+	const std::string& removeSpecial(const std::string &x) {
 		std::string tmp = std::string(x);
 		if (!tmp.empty())
 			tmp.erase(std::remove_if(tmp.begin(), tmp.end(),
                      [](char c) { return !(std::isalpha(c) || std::isdigit(c)); } ), tmp.end());
-		return os << tmp;
+		return std::string(tmp);
 	}
 
 	// Proto to Ruby.
 	std::ostream &operator<<(std::ostream &os, const StringExtNoArg &x) {
-		os << "\"" << x.str_arg() << "\"";
+		os << "\"" << removeSpecial(x.str_arg()) << "\"";
 		switch (x.str_op()) {
 			case StringExtNoArg::DUMP:
 				os << ".dump";
@@ -63,7 +63,7 @@ namespace ruby_fuzzer {
 		if (x.has_int_lit())
 			return os << "(" << (x.int_lit() % 13) << ")";
 		if (x.has_str_lit())
-			return os << "(\"" << x.str_lit() << "\")";
+			return os << "(\"" << removeSpecial(x.str_lit()) << "\")";
 		if (x.has_bool_val())
 			return os << "(" << x.bool_val() << ")";
 		if (x.has_arr_lit())
@@ -163,9 +163,9 @@ namespace ruby_fuzzer {
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const KVPair &x) {
-		os << "\"" << x.key() << "\"";
+		os << "\"" << removeSpecial(x.key()) << "\"";
 		os << " => ";
-		os << "\"" << x.val() << "\"";
+		os << "\"" << removeSpecial(x.val()) << "\"";
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const HashType &x) {
