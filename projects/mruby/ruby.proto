@@ -110,10 +110,10 @@ message Ternary {
 message ObjectSpace {
     enum OS_methods {
         COUNT = 1;
-        EACH = 2;
+//        EACH = 2;
     }
     required OS_methods os_func = 1;
-    required Rvalue os_arg = 2;
+    required HashType os_arg = 2;
 }
 
 message Time {
@@ -122,7 +122,7 @@ message Time {
         GM = 2;
     }
     required T_methods t_func = 1;
-    required Rvalue t_arg = 2;
+    required int32 t_arg = 2;
 }
 
 message Array {
@@ -146,9 +146,8 @@ message Array {
         SLICE = 17;
         PERM = 18;
         COMB = 19;
-        TRANS = 20;
-        ASSOC = 21;
-        RASSOC = 22;
+        ASSOC = 20;
+        RASSOC = 21;
     }
     required Arr_methods arr_func = 1;
     required ArrType  arr_arg = 2;

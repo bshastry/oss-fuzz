@@ -86,22 +86,22 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const BinaryOp &x) {
 		os << "(" << x.left();
 		switch (x.op()) {
-			case BinaryOp::ADD: os << "+"; break;
-			case BinaryOp::SUB: os << "-"; break;
-			case BinaryOp::MUL: os << "*"; break;
-			case BinaryOp::DIV: os << "/"; break;
-			case BinaryOp::MOD: os << "%"; break;
-			case BinaryOp::XOR: os << "^"; break;
-			case BinaryOp::AND: os << "and"; break;
-			case BinaryOp::OR: os << "or"; break;
-			case BinaryOp::EQ: os << "=="; break;
-			case BinaryOp::NE: os << "!="; break;
-			case BinaryOp::LE: os << "<="; break;
-			case BinaryOp::GE: os << ">="; break;
-			case BinaryOp::LT: os << "<"; break;
-			case BinaryOp::GT: os << ">"; break;
-			case BinaryOp::LS: os << "<<"; break;
-			case BinaryOp::RS: os << ">>"; break;
+			case BinaryOp::ADD: os << " + "; break;
+			case BinaryOp::SUB: os << " - "; break;
+			case BinaryOp::MUL: os << " * "; break;
+			case BinaryOp::DIV: os << " / "; break;
+			case BinaryOp::MOD: os << " % "; break;
+			case BinaryOp::XOR: os << " ^ "; break;
+			case BinaryOp::AND: os << " and "; break;
+			case BinaryOp::OR: os << " or "; break;
+			case BinaryOp::EQ: os << " == "; break;
+			case BinaryOp::NE: os << " != "; break;
+			case BinaryOp::LE: os << " <= "; break;
+			case BinaryOp::GE: os << " >= "; break;
+			case BinaryOp::LT: os << " < "; break;
+			case BinaryOp::GT: os << " > "; break;
+			case BinaryOp::LS: os << " << "; break;
+			case BinaryOp::RS: os << " >> "; break;
 		}
 		return os << x.right() << ")";
 	}
@@ -126,9 +126,6 @@ namespace ruby_fuzzer {
 		switch (x.os_func()) {
 			case ObjectSpace::COUNT:
 				os << "ObjectSpace.count_objects";
-				break;
-			case ObjectSpace::EACH:
-				os << "ObjectSpace.each_object";
 				break;
 		}
 		return os << "(" << x.os_arg() << ")" << "\n";
@@ -244,9 +241,6 @@ namespace ruby_fuzzer {
 			case Array::COMB:
 				os <<  x.arr_arg() << ".combination";
 				break;
-			case Array::TRANS:
-				os <<  x.arr_arg() << ".transform";
-				break;
 			case Array::ASSOC:
 				os <<  x.arr_arg() << ".assoc";
 				break;
@@ -254,7 +248,7 @@ namespace ruby_fuzzer {
 				os <<  x.arr_arg() << ".rassoc";
 				break;
 		}
-		return os << "(" << x.val_arg() << ")" << "\n";
+		return os << "(" << x.val_arg() << ")";
 	}
 	std::ostream &operator<<(std::ostream &os, const BuiltinFuncs &x) {
 		if (x.has_os())
