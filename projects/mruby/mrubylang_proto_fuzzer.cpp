@@ -1,4 +1,5 @@
 #include <string>
+#include <iostream>
 #include <fstream>
 
 #include <mruby.h>
@@ -9,8 +10,13 @@
 #include "proto_to_ruby.h"
 
 using namespace ruby_fuzzer;
+using namespace std;
+
+static size_t totalRuns = 0;
+static size_t failedRuns = 0;
 
 int FuzzRB(const uint8_t *Data, size_t size) {
+	mrb_value v;
 	mrb_state *mrb = mrb_open();
 	if (!mrb)
 		return 0;
@@ -28,7 +34,13 @@ int FuzzRB(const uint8_t *Data, size_t size) {
 		of.write(code, size);
 	}
 
-	mrb_load_string(mrb, code);
+	totalRuns++;
+	v = mrb_load_string(mrb, code);
+	if (!mrb_undef_p(v)) {
+		failedRuns++;
+		mrb_print_error(mrb);
+		cerr << "Pass percentage: " << (100 - (failedRuns*100/totalRuns)) << endl;
+	}
 	mrb_close(mrb);
 
 	free(code);
