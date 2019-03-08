@@ -15,7 +15,7 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const Array &x);
 
 	std::string& removePunct(std::string const& str) {
-		std::string tmp = str;
+		std::string tmp = std::string(str);
 		if (!tmp.empty())
 			tmp.erase(std::remove_if(tmp.begin(), tmp.end(),
                      [](char c) { return std::ispunct(c); } ), tmp.end());
