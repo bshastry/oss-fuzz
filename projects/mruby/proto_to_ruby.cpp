@@ -19,7 +19,7 @@ namespace ruby_fuzzer {
 		if (!tmp.empty())
 			tmp.erase(std::remove_if(tmp.begin(), tmp.end(),
                      [](char c) { return std::ispunct(c); } ), tmp.end());
-		return str;
+		return tmp;
 	}
 
 	// Proto to Ruby.
