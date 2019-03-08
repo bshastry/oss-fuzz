@@ -14,9 +14,16 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const HashType &x);
 	std::ostream &operator<<(std::ostream &os, const Array &x);
 
+	void removePunct(std::string &str) {
+		if (!str.empty())
+			str.erase(std::remove_if(str.begin(), str.end(),
+                     [](char c) { return std::ispunct(c); } ), str.end());
+		return str;
+	}
+
 	// Proto to Ruby.
 	std::ostream &operator<<(std::ostream &os, const StringExtNoArg &x) {
-		os << x.str_arg();
+		os << "\"" << removePunct(x.str_arg()) << "\"";
 		switch (x.str_op()) {
 			case StringExtNoArg::DUMP:
 				os << ".dump";
@@ -55,14 +62,14 @@ namespace ruby_fuzzer {
 		if (x.has_int_lit())
 			return os << "(" << (x.int_lit() % 13) << ")";
 		if (x.has_str_lit())
-			return os << "(\"" << x.str_lit() << "\")";
+			return os << "(\"" << removePunct(x.str_lit()) << "\")";
 		if (x.has_bool_val())
 			return os << "(" << x.bool_val() << ")";
 		if (x.has_arr_lit())
 			return os << "(" << x.arr_lit() << ")";
 		if (x.has_hash_lit())
 			return os << "(" << x.hash_lit() << ")";
-		return os;
+		return os << 1;
 	}
 	std::ostream &operator<<(std::ostream &os, const VarRef &x) {
 		return os << "var_" << (static_cast<uint32_t>(x.varnum()) % 10);
@@ -149,13 +156,15 @@ namespace ruby_fuzzer {
 				}
 			}
 			os << "]";
+		} else {
+			os << "[1]";
 		}
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const KVPair &x) {
-		os << "\"" << x.key() << "\"";
+		os << "\"" << removePunct(x.key()) << "\"";
 		os << " => ";
-		os << "\"" << x.val() << "\"";
+		os << "\"" << removePunct(x.val()) << "\"";
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const HashType &x) {

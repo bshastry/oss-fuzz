@@ -163,7 +163,6 @@ message BuiltinFuncs {
     }
 }
 
-
 message Statement {
   oneof stmt_oneof {
     AssignmentStatement assignment = 1;
