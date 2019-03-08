@@ -14,12 +14,12 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const HashType &x);
 	std::ostream &operator<<(std::ostream &os, const Array &x);
 
-	const std::string& removeSpecial(const std::string &x) {
+	const std::string removeSpecial(const std::string &x) {
 		std::string tmp = std::string(x);
 		if (!tmp.empty())
 			tmp.erase(std::remove_if(tmp.begin(), tmp.end(),
                      [](char c) { return !(std::isalpha(c) || std::isdigit(c)); } ), tmp.end());
-		return std::string(tmp);
+		return tmp;
 	}
 
 	// Proto to Ruby.
