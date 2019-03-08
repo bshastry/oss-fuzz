@@ -14,10 +14,11 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const HashType &x);
 	std::ostream &operator<<(std::ostream &os, const Array &x);
 
-	std::string& removePunct(std::string &str) {
-		if (!str.empty())
-			str.erase(std::remove_if(str.begin(), str.end(),
-                     [](char c) { return std::ispunct(c); } ), str.end());
+	std::string& removePunct(std::string const& str) {
+		std::string tmp = str;
+		if (!tmp.empty())
+			tmp.erase(std::remove_if(tmp.begin(), tmp.end(),
+                     [](char c) { return std::ispunct(c); } ), tmp.end());
 		return str;
 	}
 
