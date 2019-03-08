@@ -36,7 +36,7 @@ int FuzzRB(const uint8_t *Data, size_t size) {
 
 	totalRuns++;
 	v = mrb_load_string(mrb, code);
-	if (mrb->exc && !mrb_undef_p(v)) {
+	if (mrb->exc) {
 		failedRuns++;
 		cout << "--------------" << endl;
 		cout << "Faulty program" << endl;
