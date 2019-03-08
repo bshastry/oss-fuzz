@@ -38,7 +38,12 @@ int FuzzRB(const uint8_t *Data, size_t size) {
 	v = mrb_load_string(mrb, code);
 	if (mrb->exc && !mrb_undef_p(v)) {
 		failedRuns++;
+		cout << "--------------" << endl;
+		cout << "Faulty program" << endl;
+		cout << code << endl;
+		cout << "Error" << endl;
 		mrb_print_error(mrb);
+		cout << "--------------" << endl;
 		cerr << "Pass percentage: " << (100 - (failedRuns*100/totalRuns)) << endl;
 	}
 	mrb_close(mrb);
