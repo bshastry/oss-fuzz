@@ -196,9 +196,6 @@ namespace ruby_fuzzer {
 			case Array::FILL:
 				os <<  x.arr_arg() << ".fill";
 				break;
-			case Array::REV:
-				os <<  x.arr_arg() << ".reverse_each";
-				break;
 			case Array::ROTATE:
 				os <<  x.arr_arg() << ".rotate";
 				break;
@@ -225,9 +222,6 @@ namespace ruby_fuzzer {
 				break;
 			case Array::BLOCK:
 				os <<  x.arr_arg() << ".index";
-				break;
-			case Array::TO_H:
-				os <<  x.arr_arg() << ".to_h";
 				break;
 			case Array::DIG:
 				os <<  x.arr_arg() << ".dig";
