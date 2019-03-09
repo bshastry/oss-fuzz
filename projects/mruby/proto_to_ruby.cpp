@@ -139,7 +139,7 @@ namespace ruby_fuzzer {
 				os << "Time.gm";
 				break;
 		}
-		return os << "(" << x.t_arg() << ")" << "\n";
+		return os << "(" << (x.t_arg()% 13) << ")" << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const ArrType &x) {
 		if (x.elements_size() > 0) {
