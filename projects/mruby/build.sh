@@ -15,10 +15,13 @@
 #
 ################################################################################
 
+# compile LPM
+(mkdir LPM && cd LPM && cmake $SRC/libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
+
 # build project
 export LD=clang
 export LDFLAGS="$CFLAGS"
-(cd $SRC/mruby; ./minirake clean && ./minirake -j$(nproc) all)
+(cd $SRC/mruby; patch -p1 < $SRC/print.patch; ./minirake clean && ./minirake -j$(nproc) all)
 
 rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc mruby_bytecode.proto --cpp_out=genfiles
 LPM/external.protobuf/bin/protoc ruby.proto --cpp_out=genfiles
@@ -55,3 +58,13 @@ $CXX $CXXFLAGS -DJUSTDOIT mrubylang_proto_fuzzer.cpp genfiles/ruby.pb.cc proto_t
   mruby/build/host/lib/libmruby.a \
   $LIB_FUZZING_ENGINE \
   -o $OUT/mrubylang_bytecode_proto_fuzzer_debug
+
+## Build corpus based fuzzer
+for file in $SRC/mruby*.c; do
+name=$(basename $file .c)
+$CC -c $CFLAGS -I$SRC/mruby/include \
+     $file -o $OUT/${name}.o
+$CXX $CXXFLAGS $OUT/${name}.o -lFuzzingEngine -lm \
+    $SRC/mruby/build/host/lib/libmruby.a -o $OUT/${name}
+rm -f $OUT/${name}.o
+done
