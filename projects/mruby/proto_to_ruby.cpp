@@ -23,6 +23,74 @@ namespace ruby_fuzzer {
 	}
 
 	// Proto to Ruby.
+	std::ostream &operator<<(std::ostream &os, const MathConst &x) {
+		switch (x.math_const()) {
+			case MathConst::PI:
+				os << "Math::PI";
+				break;
+			case MathConst::E:
+				os << "Math::E";
+				break;
+		}
+		return os;
+	}
+	std::ostream &operator<<(std::ostream &os, const MathType &x) {
+		switch (x.math_arg_oneof_case()) {
+			case MathType::kMath_rval:
+				os << x.math_rval();
+				break;
+			case MathType::kMath_const:
+				os << x.math_const();
+				break;
+			case MathType::MATH_ARG_ONEOF_NOT_SET:
+				os << "1";
+				break;
+		}
+		return os;
+	}
+	std::ostream &operator<<(std::ostream &os, const MathOps &x) {
+		switch (x.math_op()) {
+			case MathOps::CBRT:
+				os << "Math.cbrt(" << x.math_arg() << ")";
+				break;
+			case MathOps::COS:
+				os << "Math.cos(" << x.math_arg() << ")";
+				break;
+
+			case MathOps::ERF:
+				os << "Math.erf(" << x.math_arg() << ")";
+				break;
+
+			case MathOps::ERFC:
+				os << "Math.erfc(" << x.math_arg() << ")";
+				break;
+
+			case MathOps::LOG:
+				os << "Math.log(" << x.math_arg() << ")";
+				break;
+
+			case MathOps::LOG10:
+				os << "Math.log10(" << x.math_arg() << ")";
+				break;
+
+			case MathOps::LOG2:
+				os << "Math.log2(" << x.math_arg() << ")";
+				break;
+
+			case MathOps::SIN:
+				os << "Math.sin(" << x.math_arg() << ")";
+				break;
+
+			case MathOps::SQRT:
+				os << "Math.sqrt(" << x.math_arg() << ")";
+				break;
+
+			case MathOps::TAN:
+				os << "Math.tan(" << x.math_arg() << ")";
+				break;
+		}
+		return os;
+	}
 	std::ostream &operator<<(std::ostream &os, const StringExtNoArg &x) {
 		os << "\"" << removeSpecial(x.str_arg()) << "\"";
 		switch (x.str_op()) {
@@ -60,28 +128,39 @@ namespace ruby_fuzzer {
 		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
-		if (x.has_int_lit())
-			return os << "(" << (x.int_lit() % 13) << ")";
-		if (x.has_str_lit())
-			return os << "(\"" << removeSpecial(x.str_lit()) << "\")";
-		if (x.has_bool_val())
-			return os << "(" << x.bool_val() << ")";
-		if (x.has_arr_lit())
-			return os << "(" << x.arr_lit() << ")";
-		if (x.has_hash_lit())
-			return os << "(" << x.hash_lit() << ")";
-		return os << 1;
+		switch (x.const_oneof_case()) {
+			case Const::kInt_lit::
+				os << "(" << (x.int_lit() % 13) << ")";
+				break;
+			case Const::kBool_val::
+				os << "(" << x.bool_val() << ")";
+				break;
+			case Const::CONST_ONEOF_NOT_SET:
+				os << "1";
+				break;
+		}
+		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const VarRef &x) {
 		return os << "var_" << (static_cast<uint32_t>(x.varnum()) % 10);
 	}
 	std::ostream &operator<<(std::ostream &os, const Rvalue &x) {
-		if (x.has_varref()) return os << x.varref();
-		if (x.has_cons())   return os << x.cons();
-		if (x.has_binop())  return os << x.binop();
-		if (x.has_arrop()) return os << x.arrop();
-		if (x.has_strextop()) return os << x.strextop();
-		return os << "1";
+
+		switch (x.rvalue_oneof_case()) {
+			case Rvalue::kVarref::
+				os << x.varref();
+				break;
+			case Rvalue::kCons::
+				os << x.cons();
+				break;
+			case Rvalue::kBinop::
+				os << x.binop();
+				break;
+			case Rvalue::RVALUE_ONEOF_NOT_SET:
+				os << "1"
+				break;
+		}
+		return os;
 	}
 	std::ostream &operator<<(std::ostream &os, const BinaryOp &x) {
 		os << "(" << x.left();
@@ -100,7 +179,6 @@ namespace ruby_fuzzer {
 			case BinaryOp::GE: os << " >= "; break;
 			case BinaryOp::LT: os << " < "; break;
 			case BinaryOp::GT: os << " > "; break;
-//			case BinaryOp::LS: os << " << "; break;
 			case BinaryOp::RS: os << " >> "; break;
 		}
 		return os << x.right() << ")";
@@ -112,11 +190,6 @@ namespace ruby_fuzzer {
 		return os << "if " << x.cond() << "\n"
 		          << x.if_body() << "\nelse\n"
 		          << x.else_body() << "\nend\n";
-	}
-	std::ostream &operator<<(std::ostream &os, const While &x) {
-		return os << "while " << x.cond() << "\n" << x.body() << "\n"
-					<< "break" << "\n"
-					<< "end\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const Ternary &x) {
 		return os << "(" << x.tern_cond() << " ? "
@@ -245,25 +318,45 @@ namespace ruby_fuzzer {
 		return os << "(" << x.val_arg() << ")";
 	}
 	std::ostream &operator<<(std::ostream &os, const BuiltinFuncs &x) {
-		if (x.has_os())
-			os << x.os();
-		else if (x.has_time())
-			os << x.time();
-		else if (x.has_arr())
-			os << x.arr();
+		switch (x.bifunc_oneof_case()) {
+			case BuiltinFuncs::kOs:
+				os << x.os();
+				break;
+			case BuiltinFuncs::kTime:
+				os << x.time();
+				break;
+			case BuiltinFuncs::kArr:
+				os << x.arr();
+				break;
+			case BuiltinFuncs::kMops:
+				os << x.mops();
+				break;
+			case BuiltinFuncs::BIFUNC_ONEOF_NOT_SET:
+				os << "1";
+				break;
+		}
 		return os << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const Statement &x) {
-		if (x.has_assignment())
-			return os << x.assignment();
-		else if (x.has_ifelse())
-			return os << x.ifelse();
-		else if (x.has_ternary_stmt())
-			return os << x.ternary_stmt();
-		else if (x.has_builtins())
-			return os << x.builtins();
-		else if (x.has_blockstmt())
-			return os << x.blockstmt();
+		switch (x.stmt_oneof_case()) {
+			case Statement::kAssignment:
+				os << x.assignment();
+				break;
+			case Statement::kIfelse:
+				os << x.ifelse();
+				break;
+			case Statement::kTernary_stmt:
+				os << x.ternary_stmt();
+				break;
+			case Statement::kBuiltins:
+				os << x.builtins();
+				break;
+			case Statement::kBlockstmt:
+				os << x.blockstmt();
+				break;
+			case Statement::STMT_ONEOF_NOT_SET:
+				break;
+		}
 		return os << "\n";
 	}
 	std::ostream &operator<<(std::ostream &os, const StatementSeq &x) {

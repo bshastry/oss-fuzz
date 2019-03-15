@@ -34,13 +34,18 @@ message StringExtNoArg {
   required string str_arg = 2;
 }
 
+message MathConst {
+    enum MathConstLit {
+        PI = 0;
+        E = 1;
+    }
+    required MathConstLit math_const = 1;
+}
+
 message Const {
     oneof const_oneof {
         int32 int_lit = 1;
-        ArrType arr_lit = 2;
-        HashType hash_lit = 3;
         bool bool_val = 4;
-        string str_lit = 5;
     }
 }
 
@@ -60,8 +65,7 @@ message BinaryOp {
     GE = 11;
     LT = 12;
     GT = 13;
-//    LS = 14;
-    RS = 15;
+    RS = 14;
   };
   required Op op = 1;
   required Rvalue left = 2;
@@ -73,8 +77,6 @@ message Rvalue {
     VarRef varref = 1;
     Const cons = 2;
     BinaryOp binop = 3;
-    Array arrop = 4;
-    StringExtNoArg strextop = 5;
   }
 }
 
@@ -90,16 +92,11 @@ message IfElse {
   required StatementSeq else_body = 3;
 }
 
-message While {
-  required Rvalue cond = 1;
-  required StatementSeq body = 2;
-}
-
 //TODO: Add Switch statement
-message Switch {
-    required Rvalue switch_var = 1;
-    repeated Rvalue cond = 2;
-}
+//message Switch {
+//    required Rvalue switch_var = 1;
+//    repeated Rvalue cond = 2;
+//}
 
 message Ternary {
     required Rvalue tern_cond = 1;
@@ -110,7 +107,6 @@ message Ternary {
 message ObjectSpace {
     enum OS_methods {
         COUNT = 1;
-//        EACH = 2;
     }
     required OS_methods os_func = 1;
     required HashType os_arg = 2;
@@ -152,11 +148,36 @@ message Array {
     required Rvalue   val_arg = 3;
 }
 
+message MathType {
+    oneof math_arg_oneof {
+        Rvalue math_rval = 2;
+        MathConst math_const = 3;
+    }
+}
+
+message MathOps {
+    enum Mops {
+      CBRT = 1;
+      COS = 2;
+      ERF = 3;
+      ERFC = 4;
+      LOG = 5;
+      LOG10 = 6;
+      LOG2 = 7;
+      SIN = 8;
+      SQRT = 9;
+      TAN = 10;
+    }
+    required Mops math_op = 1;
+    required MathType math_arg = 2;
+}
+
 message BuiltinFuncs {
     oneof bifunc_oneof {
         ObjectSpace os = 1;
         Time time = 2;
         Array arr = 3;
+        MathOps mops = 4;
     }
 }
 
