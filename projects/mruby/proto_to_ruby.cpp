@@ -100,7 +100,7 @@ namespace ruby_fuzzer {
 			case BinaryOp::GE: os << " >= "; break;
 			case BinaryOp::LT: os << " < "; break;
 			case BinaryOp::GT: os << " > "; break;
-			case BinaryOp::LS: os << " << "; break;
+//			case BinaryOp::LS: os << " << "; break;
 			case BinaryOp::RS: os << " >> "; break;
 		}
 		return os << x.right() << ")";

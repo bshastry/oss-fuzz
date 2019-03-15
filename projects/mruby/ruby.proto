@@ -60,7 +60,7 @@ message BinaryOp {
     GE = 11;
     LT = 12;
     GT = 13;
-    LS = 14;
+//    LS = 14;
     RS = 15;
   };
   required Op op = 1;
