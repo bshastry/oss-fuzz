@@ -12,8 +12,10 @@
 using namespace ruby_fuzzer;
 using namespace std;
 
+#ifdef JUSTDOIT
 static size_t totalRuns = 0;
 static size_t failedRuns = 0;
+#endif
 
 int FuzzRB(const uint8_t *Data, size_t size) {
 	mrb_value v;
@@ -33,9 +35,9 @@ int FuzzRB(const uint8_t *Data, size_t size) {
 		std::ofstream of(dump_path);
 		of.write(code, size);
 	}
-
-	totalRuns++;
 	v = mrb_load_string(mrb, code);
+#ifdef JUSTDOIT
+	totalRuns++;
 	if (mrb->exc) {
 		failedRuns++;
 		cout << "--------------" << endl;
@@ -46,6 +48,7 @@ int FuzzRB(const uint8_t *Data, size_t size) {
 		cout << "--------------" << endl;
 		cerr << "Pass percentage: " << (100 - (failedRuns*100/totalRuns)) << endl;
 	}
+#endif
 	mrb_close(mrb);
 
 	free(code);

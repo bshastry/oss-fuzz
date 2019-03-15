@@ -44,3 +44,14 @@ $CXX $CXXFLAGS mrubylang_proto_fuzzer.cpp genfiles/ruby.pb.cc proto_to_ruby.cpp 
   mruby/build/host/lib/libmruby.a \
   $LIB_FUZZING_ENGINE \
   -o $OUT/mrubylang_bytecode_proto_fuzzer
+
+# build ruby fuzzer with debug info
+$CXX $CXXFLAGS -DJUSTDOIT mrubylang_proto_fuzzer.cpp genfiles/ruby.pb.cc proto_to_ruby.cpp \
+  -I genfiles -I.  -I libprotobuf-mutator/  -I LPM/external.protobuf/include \
+  -I mruby/include -lz -lm \
+  LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
+  LPM/src/libprotobuf-mutator.a \
+  LPM/external.protobuf/lib/libprotobuf.a \
+  mruby/build/host/lib/libmruby.a \
+  $LIB_FUZZING_ENGINE \
+  -o $OUT/mrubylang_bytecode_proto_fuzzer_debug
