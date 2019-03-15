@@ -13,6 +13,7 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const ArrType &x);
 	std::ostream &operator<<(std::ostream &os, const HashType &x);
 	std::ostream &operator<<(std::ostream &os, const Array &x);
+	std::ostream &operator<<(std::ostream &os, const Rvalue &x);
 
 	const std::string removeSpecial(const std::string &x) {
 		std::string tmp = std::string(x);
@@ -36,10 +37,10 @@ namespace ruby_fuzzer {
 	}
 	std::ostream &operator<<(std::ostream &os, const MathType &x) {
 		switch (x.math_arg_oneof_case()) {
-			case MathType::kMath_rval:
+			case MathType::kMathRval:
 				os << x.math_rval();
 				break;
-			case MathType::kMath_const:
+			case MathType::kMathConst:
 				os << x.math_const();
 				break;
 			case MathType::MATH_ARG_ONEOF_NOT_SET:
@@ -129,10 +130,10 @@ namespace ruby_fuzzer {
 	}
 	std::ostream &operator<<(std::ostream &os, const Const &x) {
 		switch (x.const_oneof_case()) {
-			case Const::kInt_lit::
+			case Const::kIntLit:
 				os << "(" << (x.int_lit() % 13) << ")";
 				break;
-			case Const::kBool_val::
+			case Const::kBoolVal:
 				os << "(" << x.bool_val() << ")";
 				break;
 			case Const::CONST_ONEOF_NOT_SET:
@@ -147,17 +148,17 @@ namespace ruby_fuzzer {
 	std::ostream &operator<<(std::ostream &os, const Rvalue &x) {
 
 		switch (x.rvalue_oneof_case()) {
-			case Rvalue::kVarref::
+			case Rvalue::kVarref:
 				os << x.varref();
 				break;
-			case Rvalue::kCons::
+			case Rvalue::kCons:
 				os << x.cons();
 				break;
-			case Rvalue::kBinop::
+			case Rvalue::kBinop:
 				os << x.binop();
 				break;
 			case Rvalue::RVALUE_ONEOF_NOT_SET:
-				os << "1"
+				os << "1";
 				break;
 		}
 		return os;
@@ -345,7 +346,7 @@ namespace ruby_fuzzer {
 			case Statement::kIfelse:
 				os << x.ifelse();
 				break;
-			case Statement::kTernary_stmt:
+			case Statement::kTernaryStmt:
 				os << x.ternary_stmt();
 				break;
 			case Statement::kBuiltins:
