@@ -3,15 +3,21 @@
 #include <string>
 #include <ostream>
 #include <sstream>
-
+#include <stack>
 #include "ruby.pb.h"
 
 namespace ruby_fuzzer {
 	class protoConverter
 	{
 	public:
-		protoConverter() {}
-		protoConverter(protoConverter const&) {}
+		protoConverter() {
+			m_numLiveVars = 1;
+			m_numVarsPerScope.push(m_numLiveVars);
+		}
+		protoConverter(protoConverter const& x) {
+			m_numLiveVars = x.m_numLiveVars;
+			m_numVarsPerScope = x.m_numVarsPerScope;
+		}
 		~protoConverter() {}
 		std::string FunctionToString(Function const& _input);
 
@@ -43,5 +49,7 @@ namespace ruby_fuzzer {
 		std::string removeSpecial(const std::string &x);
 
 		std::ostringstream m_output;
+		std::stack<uint8_t> m_numVarsPerScope;
+		int32_t m_numLiveVars;
 	};
 }

@@ -81,7 +81,6 @@ message Rvalue {
 }
 
 message AssignmentStatement {
-  required VarRef lvalue = 1;
   required Rvalue rvalue = 2;
 }
 

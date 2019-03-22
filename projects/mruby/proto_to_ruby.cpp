@@ -118,9 +118,10 @@ void protoConverter::visit(Array const& x)
 
 void protoConverter::visit(AssignmentStatement const& x)
 {
-	visit(x.lvalue());
-	m_output << " = ";
+	m_output << "var_" << m_numLiveVars << " = ";
 	visit(x.rvalue());
+	m_numVarsPerScope.top()++;
+	m_numLiveVars++;
 	m_output << "\n";
 }
 
@@ -188,7 +189,7 @@ void protoConverter::visit(Const const& x)
 
 void protoConverter::visit(Function const& x)
 {
-	m_output << "def foo()\n";
+	m_output << "def foo()\nvar_0 = 1\n";
 	visit(x.statements());
 	m_output << "end\n";
 	m_output << "foo\n";
@@ -371,10 +372,13 @@ void protoConverter::visit(Statement const& x)
 void protoConverter::visit(StatementSeq const& x)
 {
 	if (x.statements_size() > 0) {
+		m_numVarsPerScope.push(0);
 		m_output << "@scope ||= begin\n";
 		for (auto &st : x.statements())
 			visit(st);
 		m_output << "end\n";
+		m_numLiveVars -= m_numVarsPerScope.top();
+		m_numVarsPerScope.pop();
 	}
 }
 
@@ -441,7 +445,7 @@ void protoConverter::visit(Time const& x)
 
 void protoConverter::visit(VarRef const& x)
 {
-	m_output << "var_" << (static_cast<uint32_t>(x.varnum()) % 10);
+	m_output << "var_" << (static_cast<uint32_t>(x.varnum()) % m_numLiveVars);
 }
 
 std::string protoConverter::FunctionToString(Function const& input)
