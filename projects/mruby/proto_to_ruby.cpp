@@ -157,7 +157,7 @@ void protoConverter::visit(BuiltinFuncs const& x)
 {
 	switch (x.bifunc_oneof_case()) {
 		case BuiltinFuncs::kOs:
-			visit(x.m_output());
+			visit(x.os());
 			break;
 		case BuiltinFuncs::kTime:
 			visit(x.time());
@@ -206,7 +206,7 @@ void protoConverter::visit(HashType const& x)
 		for (auto &e : x.keyval()) {
 			i--;
 			if (i == 0) {
-				visit(e)
+				visit(e);
 			}
 			else {
 				visit(e);
@@ -245,6 +245,19 @@ void protoConverter::visit(MathConst const& x)
 			m_output << "Math::E";
 			break;
 	}
+}{
+        mstore(shr(calldataload(128), 1), 1)
+        sstore(0, 0)
+        sstore(32, 0)
+}
+{
+let a,b := foo(calldataload(0),calldataload(32),calldataload(64),calldataload(96),calldataload(128),calldataload(160),calldataload(192),calldataload(224))
+sstore(0, a)
+sstore(32, b)
+function foo(x_0, x_1, x_2, x_3, x_4, x_5, x_6, x_7) -> x_8, x_9
+{
+mstore(shr(x_4,1), 1)
+}
 }
 
 void protoConverter::visit(MathOps const& x)
