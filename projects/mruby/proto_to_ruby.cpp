@@ -466,4 +466,3 @@ std::string protoConverter::FunctionToString(Function const& input)
 	visit(input);
 	return m_output.str();
 }
-} // namespace ruby_fuzzer
