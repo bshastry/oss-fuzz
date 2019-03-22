@@ -190,7 +190,7 @@ void protoConverter::visit(Function const& x)
 {
 	m_output << "def foo()\n";
 	visit(x.statements());
-	m_output << "end\n"
+	m_output << "end\n";
 	m_output << "foo\n";
 }
 
@@ -241,71 +241,58 @@ void protoConverter::visit(MathConst const& x)
 			m_output << "Math::E";
 			break;
 	}
-}{
-        mstore(shr(calldataload(128), 1), 1)
-        sstore(0, 0)
-        sstore(32, 0)
-}
-{
-let a,b := foo(calldataload(0),calldataload(32),calldataload(64),calldataload(96),calldataload(128),calldataload(160),calldataload(192),calldataload(224))
-sstore(0, a)
-sstore(32, b)
-function foo(x_0, x_1, x_2, x_3, x_4, x_5, x_6, x_7) -> x_8, x_9
-{
-mstore(shr(x_4,1), 1)
-}
 }
 
 void protoConverter::visit(MathOps const& x)
 {
 	switch (x.math_op()) {
 		case MathOps::CBRT:
-			m_output << "Math.cbrt("
+			m_output << "Math.cbrt(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
 		case MathOps::COS:
-			m_output << "Math.cos("
+			m_output << "Math.cos(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
 		case MathOps::ERF:
-			m_output << "Math.erf("
+			m_output << "Math.erf(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
 		case MathOps::ERFC:
-			m_output << "Math.erfc("
+			m_output << "Math.erfc(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
 		case MathOps::LOG:
-			m_output << "Math.log("
+			m_output << "Math.log(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
 		case MathOps::LOG10:
-			m_output << "Math.log10("
+			m_output << "Math.log10(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
 		case MathOps::LOG2:
-			m_output << "Math.log2("
+			m_output << "Math.log2(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
 		case MathOps::SIN:
-			m_output << "Math.sin("
+			m_output << "Math.sin(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
 		case MathOps::SQRT:
-			m_output << "Math.sqrt("
+			m_output << "Math.sqrt(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
 		case MathOps::TAN:
-			m_output << "Math.tan("
+			m_output << "Math.tan(";
 			visit(x.math_arg());
 			m_output << ")";
 			break;
