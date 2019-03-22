@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +14,9 @@
 #
 ################################################################################
 
-echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE... "
-mkdir -p $WORK/libfuzzer
-pushd $WORK/libfuzzer > /dev/null
-# Use -fPIC to allow preloading (LD_PRELOAD).
-$CXX $CXXFLAGS -std=c++11 -O2 -fPIC $SANITIZER_FLAGS -fno-sanitize=vptr \
-    -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
-popd > /dev/null
-rm -rf $WORK/libfuzzer
-echo " done."
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER guidovranken@gmail.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool subversion
+RUN git clone --depth 1 https://github.com/guidovranken/LAME-fuzzers
+RUN svn checkout https://svn.code.sf.net/p/lame/svn/trunk/lame $SRC/lame
+COPY build.sh $SRC/

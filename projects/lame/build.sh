@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
 #
 ################################################################################
 
-echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE... "
-mkdir -p $WORK/libfuzzer
-pushd $WORK/libfuzzer > /dev/null
-# Use -fPIC to allow preloading (LD_PRELOAD).
-$CXX $CXXFLAGS -std=c++11 -O2 -fPIC $SANITIZER_FLAGS -fno-sanitize=vptr \
-    -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
-popd > /dev/null
-rm -rf $WORK/libfuzzer
-echo " done."
+cd $SRC/lame
+./configure
+make -j$(nproc)
+
+cd $SRC/LAME-fuzzers
+if [[ $CXXFLAGS = *sanitize=memory* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DMSAN"
+fi
+
+$CXX -std=c++17 -Wall -Wextra -Werror $CXXFLAGS -I fuzzing-headers/include/ -I $SRC/lame/include/ fuzzer-encoder.cpp -lFuzzingEngine $SRC/lame/libmp3lame/.libs/libmp3lame.a -lm -o $OUT/fuzzer-encoder
+cp fuzzer-encoder_seed_corpus.zip $OUT/
+cp fuzzer-encoder.dict $OUT/
