@@ -1,9 +1,5 @@
 #include "proto_to_ruby.h"
 
-#include <ostream>
-#include <sstream>
-#include <fstream>
-
 using namespace ruby_fuzzer;
 
 std::string removeSpecial(const std::string &x)

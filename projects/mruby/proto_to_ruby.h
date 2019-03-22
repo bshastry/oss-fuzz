@@ -1,6 +1,8 @@
 #include <cstdint>
 #include <cstddef>
 #include <string>
+#include <ostream>
+#include <sstream>
 
 #include "ruby.pb.h"
 
