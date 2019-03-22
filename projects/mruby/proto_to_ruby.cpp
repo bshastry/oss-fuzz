@@ -1,385 +1,456 @@
 #include "proto_to_ruby.h"
-#include "ruby.pb.h"
 
 #include <ostream>
 #include <sstream>
 #include <fstream>
 
-namespace ruby_fuzzer {
+using namespace ruby_fuzzer;
 
-	// Forward decls.
-	std::ostream &operator<<(std::ostream &os, const BinaryOp &x);
-	std::ostream &operator<<(std::ostream &os, const StatementSeq &x);
-	std::ostream &operator<<(std::ostream &os, const ArrType &x);
-	std::ostream &operator<<(std::ostream &os, const HashType &x);
-	std::ostream &operator<<(std::ostream &os, const Array &x);
-	std::ostream &operator<<(std::ostream &os, const Rvalue &x);
+std::string removeSpecial(const std::string &x)
+{
+	std::string tmp(x);
+	if (!tmp.empty())
+		tmp.erase(std::remove_if(tmp.begin(), tmp.end(),
+		                         [](char c) { return !(std::isalpha(c) || std::isdigit(c)); } ), tmp.end());
+	return tmp;
+}
 
-	const std::string removeSpecial(const std::string &x) {
-		std::string tmp = std::string(x);
-		if (!tmp.empty())
-			tmp.erase(std::remove_if(tmp.begin(), tmp.end(),
-                     [](char c) { return !(std::isalpha(c) || std::isdigit(c)); } ), tmp.end());
-		return tmp;
-	}
-
-	// Proto to Ruby.
-	std::ostream &operator<<(std::ostream &os, const MathConst &x) {
-		switch (x.math_const()) {
-			case MathConst::PI:
-				os << "Math::PI";
-				break;
-			case MathConst::E:
-				os << "Math::E";
-				break;
-		}
-		return os;
-	}
-	std::ostream &operator<<(std::ostream &os, const MathType &x) {
-		switch (x.math_arg_oneof_case()) {
-			case MathType::kMathRval:
-				os << x.math_rval();
-				break;
-			case MathType::kMathConst:
-				os << x.math_const();
-				break;
-			case MathType::MATH_ARG_ONEOF_NOT_SET:
-				os << "1";
-				break;
-		}
-		return os;
-	}
-	std::ostream &operator<<(std::ostream &os, const MathOps &x) {
-		switch (x.math_op()) {
-			case MathOps::CBRT:
-				os << "Math.cbrt(" << x.math_arg() << ")";
-				break;
-			case MathOps::COS:
-				os << "Math.cos(" << x.math_arg() << ")";
-				break;
-
-			case MathOps::ERF:
-				os << "Math.erf(" << x.math_arg() << ")";
-				break;
-
-			case MathOps::ERFC:
-				os << "Math.erfc(" << x.math_arg() << ")";
-				break;
-
-			case MathOps::LOG:
-				os << "Math.log(" << x.math_arg() << ")";
-				break;
-
-			case MathOps::LOG10:
-				os << "Math.log10(" << x.math_arg() << ")";
-				break;
-
-			case MathOps::LOG2:
-				os << "Math.log2(" << x.math_arg() << ")";
-				break;
-
-			case MathOps::SIN:
-				os << "Math.sin(" << x.math_arg() << ")";
-				break;
-
-			case MathOps::SQRT:
-				os << "Math.sqrt(" << x.math_arg() << ")";
-				break;
-
-			case MathOps::TAN:
-				os << "Math.tan(" << x.math_arg() << ")";
-				break;
-		}
-		return os;
-	}
-	std::ostream &operator<<(std::ostream &os, const StringExtNoArg &x) {
-		os << "\"" << removeSpecial(x.str_arg()) << "\"";
-		switch (x.str_op()) {
-			case StringExtNoArg::DUMP:
-				os << ".dump";
-				break;
-			case StringExtNoArg::STRIP:
-				os << ".strip";
-				break;
-			case StringExtNoArg::LSTRIP:
-				os << ".lstrip";
-				break;
-			case StringExtNoArg::RSTRIP:
-				os << ".rstrip";
-				break;
-			case StringExtNoArg::STRIPE:
-				os << ".strip!";
-				break;
-			case StringExtNoArg::LSTRIPE:
-				os << ".lstrip!";
-				break;
-			case StringExtNoArg::RSTRIPE:
-				os << ".rstrip!";
-				break;
-			case StringExtNoArg::SWAPCASE:
-				os << ".swapcase";
-				break;
-			case StringExtNoArg::SWAPCASEE:
-				os << ".swapcase!";
-				break;
-			case StringExtNoArg::SQUEEZE:
-				os << ".squeeze";
-				break;
-		}
-		return os;
-	}
-	std::ostream &operator<<(std::ostream &os, const Const &x) {
-		switch (x.const_oneof_case()) {
-			case Const::kIntLit:
-				os << "(" << (x.int_lit() % 13) << ")";
-				break;
-			case Const::kBoolVal:
-				os << "(" << x.bool_val() << ")";
-				break;
-			case Const::CONST_ONEOF_NOT_SET:
-				os << "1";
-				break;
-		}
-		return os;
-	}
-	std::ostream &operator<<(std::ostream &os, const VarRef &x) {
-		return os << "var_" << (static_cast<uint32_t>(x.varnum()) % 10);
-	}
-	std::ostream &operator<<(std::ostream &os, const Rvalue &x) {
-
-		switch (x.rvalue_oneof_case()) {
-			case Rvalue::kVarref:
-				os << x.varref();
-				break;
-			case Rvalue::kCons:
-				os << x.cons();
-				break;
-			case Rvalue::kBinop:
-				os << x.binop();
-				break;
-			case Rvalue::RVALUE_ONEOF_NOT_SET:
-				os << "1";
-				break;
-		}
-		return os;
-	}
-	std::ostream &operator<<(std::ostream &os, const BinaryOp &x) {
-		os << "(" << x.left();
-		switch (x.op()) {
-			case BinaryOp::ADD: os << " + "; break;
-			case BinaryOp::SUB: os << " - "; break;
-			case BinaryOp::MUL: os << " * "; break;
-			case BinaryOp::DIV: os << " / "; break;
-			case BinaryOp::MOD: os << " % "; break;
-			case BinaryOp::XOR: os << " ^ "; break;
-			case BinaryOp::AND: os << " and "; break;
-			case BinaryOp::OR: os << " or "; break;
-			case BinaryOp::EQ: os << " == "; break;
-			case BinaryOp::NE: os << " != "; break;
-			case BinaryOp::LE: os << " <= "; break;
-			case BinaryOp::GE: os << " >= "; break;
-			case BinaryOp::LT: os << " < "; break;
-			case BinaryOp::GT: os << " > "; break;
-			case BinaryOp::RS: os << " >> "; break;
-		}
-		return os << x.right() << ")";
-	}
-	std::ostream &operator<<(std::ostream &os, const AssignmentStatement &x) {
-		return os << x.lvalue() << " = " << x.rvalue() << "\n";
-	}
-	std::ostream &operator<<(std::ostream &os, const IfElse &x) {
-		return os << "if " << x.cond() << "\n"
-		          << x.if_body() << "\nelse\n"
-		          << x.else_body() << "\nend\n";
-	}
-	std::ostream &operator<<(std::ostream &os, const Ternary &x) {
-		return os << "(" << x.tern_cond() << " ? "
-					<< x.t_branch() << " : " << x.f_branch() << ")\n";
-	}
-	std::ostream &operator<<(std::ostream &os, const ObjectSpace &x) {
-		switch (x.os_func()) {
-			case ObjectSpace::COUNT:
-				os << "ObjectSpace.count_objects";
-				break;
-		}
-		return os << "(" << x.os_arg() << ")" << "\n";
-	}
-	std::ostream &operator<<(std::ostream &os, const Time &x) {
-		switch (x.t_func()) {
-			case Time::AT:
-				os << "Time.at";
-				break;
-			case Time::GM:
-				os << "Time.gm";
-				break;
-		}
-		return os << "(" << (x.t_arg()% 13) << ")" << "\n";
-	}
-	std::ostream &operator<<(std::ostream &os, const ArrType &x) {
-		if (x.elements_size() > 0) {
-			int i = x.elements_size();
-			os << "[";
-			for (auto &e : x.elements()) {
-				i--;
-				if (i == 0) {
-					os << e;
-				} else {
-					os << e << ", ";
-				}
+void protoConverter::visit(ArrType const& x)
+{
+	if (x.elements_size() > 0) {
+		int i = x.elements_size();
+		m_output << "[";
+		for (auto &e : x.elements()) {
+			i--;
+			if (i == 0) {
+				visit(e);
+			} else {
+				visit(e);
+				m_output << ", ";
 			}
-			os << "]";
-		} else {
-			os << "[1]";
 		}
-		return os;
+		m_output << "]";
+	} else {
+		m_output << "[1]";
 	}
-	std::ostream &operator<<(std::ostream &os, const KVPair &x) {
-		os << "\"" << removeSpecial(x.key()) << "\"";
-		os << " => ";
-		os << "\"" << removeSpecial(x.val()) << "\"";
-		return os;
+}
+
+void protoConverter::visit(Array const& x)
+{
+	switch (x.arr_func()) {
+		case Array::FLATTEN:
+			visit(x.arr_arg());
+			m_output << ".flatten";
+			break;
+		case Array::COMPACT:
+			visit(x.arr_arg());
+			m_output << ".compact";
+			break;
+		case Array::FETCH:
+			visit(x.arr_arg());
+			m_output << ".fetch";
+			break;
+		case Array::FILL:
+			visit(x.arr_arg());
+			m_output << ".fill";
+			break;
+		case Array::ROTATE:
+			visit(x.arr_arg());
+			m_output << ".rotate";
+			break;
+		case Array::ROTATE_E:
+			visit(x.arr_arg());
+			m_output << ".rotate!";
+			break;
+		case Array::DELETEIF:
+			visit(x.arr_arg());
+			m_output << ".delete_if";
+			break;
+		case Array::INSERT:
+			visit(x.arr_arg());
+			m_output << ".insert";
+			break;
+		case Array::BSEARCH:
+			visit(x.arr_arg());
+			m_output << ".bsearch";
+			break;
+		case Array::KEEPIF:
+			visit(x.arr_arg());
+			m_output << ".keep_if";
+			break;
+		case Array::SELECT:
+			visit(x.arr_arg());
+			m_output << ".select";
+			break;
+		case Array::VALUES_AT:
+			visit(x.arr_arg());
+			m_output << ".values_at";
+			break;
+		case Array::BLOCK:
+			visit(x.arr_arg());
+			m_output << ".index";
+			break;
+		case Array::DIG:
+			visit(x.arr_arg());
+			m_output << ".dig";
+			break;
+		case Array::SLICE:
+			visit(x.arr_arg());
+			m_output << ".slice";
+			break;
+		case Array::PERM:
+			visit(x.arr_arg());
+			m_output << ".permutation";
+			break;
+		case Array::COMB:
+			visit(x.arr_arg());
+			m_output << ".combination";
+			break;
+		case Array::ASSOC:
+			visit(x.arr_arg());
+			m_output << ".assoc";
+			break;
+		case Array::RASSOC:
+			visit(x.arr_arg());
+			m_output << ".rassoc";
+			break;
 	}
-	std::ostream &operator<<(std::ostream &os, const HashType &x) {
-		if (x.keyval_size() > 0) {
-			int i = x.keyval_size();
-			os << "{";
-			for (auto &e : x.keyval()) {
-				i--;
-				if (i == 0) {
-					os << e;
-				}
-				else {
-					os << e << ", ";
-				}
+	m_output << "(";
+	visit(x.val_arg());
+	m_output << ")";
+}
+
+void protoConverter::visit(AssignmentStatement const& x)
+{
+	visit(x.lvalue());
+	m_output << " = ";
+	visit(x.rvalue());
+	m_output << "\n";
+}
+
+void protoConverter::visit(BinaryOp const& x)
+{
+	m_output << "(";
+	visit(x.left());
+	switch (x.op()) {
+		case BinaryOp::ADD: m_output << " + "; break;
+		case BinaryOp::SUB: m_output << " - "; break;
+		case BinaryOp::MUL: m_output << " * "; break;
+		case BinaryOp::DIV: m_output << " / "; break;
+		case BinaryOp::MOD: m_output << " % "; break;
+		case BinaryOp::XOR: m_output << " ^ "; break;
+		case BinaryOp::AND: m_output << " and "; break;
+		case BinaryOp::OR: m_output << " or "; break;
+		case BinaryOp::EQ: m_output << " == "; break;
+		case BinaryOp::NE: m_output << " != "; break;
+		case BinaryOp::LE: m_output << " <= "; break;
+		case BinaryOp::GE: m_output << " >= "; break;
+		case BinaryOp::LT: m_output << " < "; break;
+		case BinaryOp::GT: m_output << " > "; break;
+		case BinaryOp::RS: m_output << " >> "; break;
+	}
+	visit(x.right());
+	m_output << ")";
+}
+
+void protoConverter::visit(BuiltinFuncs const& x)
+{
+	switch (x.bifunc_oneof_case()) {
+		case BuiltinFuncs::kOs:
+			visit(x.m_output());
+			break;
+		case BuiltinFuncs::kTime:
+			visit(x.time());
+			break;
+		case BuiltinFuncs::kArr:
+			visit(x.arr());
+			break;
+		case BuiltinFuncs::kMops:
+			visit(x.mops());
+			break;
+		case BuiltinFuncs::BIFUNC_ONEOF_NOT_SET:
+			m_output << "1";
+			break;
+	}
+	m_output << "\n";
+}
+
+void protoConverter::visit(Const const& x)
+{
+	switch (x.const_oneof_case()) {
+		case Const::kIntLit:
+			m_output << "(" << (x.int_lit() % 13) << ")";
+			break;
+		case Const::kBoolVal:
+			m_output << "(" << x.bool_val() << ")";
+			break;
+		case Const::CONST_ONEOF_NOT_SET:
+			m_output << "1";
+			break;
+	}
+}
+
+void protoConverter::visit(Function const& x)
+{
+	m_output << "def foo()\n";
+	visit(x.statements());
+	m_output << "end\n"
+	m_output << "foo\n";
+}
+
+void protoConverter::visit(HashType const& x)
+{
+	if (x.keyval_size() > 0) {
+		int i = x.keyval_size();
+		m_output << "{";
+		for (auto &e : x.keyval()) {
+			i--;
+			if (i == 0) {
+				visit(e)
 			}
-			os << "}";
+			else {
+				visit(e);
+				m_output << ", ";
+			}
 		}
-		return os;
+		m_output << "}";
 	}
-	std::ostream &operator<<(std::ostream &os, const Array &x) {
-		switch (x.arr_func()) {
-			case Array::FLATTEN:
-				os <<  x.arr_arg() << ".flatten";
-				break;
-			case Array::COMPACT:
-				os <<  x.arr_arg() << ".compact";
-				break;
-			case Array::FETCH:
-				os <<  x.arr_arg() << ".fetch";
-				break;
-			case Array::FILL:
-				os <<  x.arr_arg() << ".fill";
-				break;
-			case Array::ROTATE:
-				os <<  x.arr_arg() << ".rotate";
-				break;
-			case Array::ROTATE_E:
-				os <<  x.arr_arg() << ".rotate!";
-				break;
-			case Array::DELETEIF:
-				os <<  x.arr_arg() << ".delete_if";
-				break;
-			case Array::INSERT:
-				os <<  x.arr_arg() << ".insert";
-				break;
-			case Array::BSEARCH:
-				os <<  x.arr_arg() << ".bsearch";
-				break;
-			case Array::KEEPIF:
-				os <<  x.arr_arg() << ".keep_if";
-				break;
-			case Array::SELECT:
-				os <<  x.arr_arg() << ".select";
-				break;
-			case Array::VALUES_AT:
-				os <<  x.arr_arg() << ".values_at";
-				break;
-			case Array::BLOCK:
-				os <<  x.arr_arg() << ".index";
-				break;
-			case Array::DIG:
-				os <<  x.arr_arg() << ".dig";
-				break;
-			case Array::SLICE:
-				os <<  x.arr_arg() << ".slice";
-				break;
-			case Array::PERM:
-				os <<  x.arr_arg() << ".permutation";
-				break;
-			case Array::COMB:
-				os <<  x.arr_arg() << ".combination";
-				break;
-			case Array::ASSOC:
-				os <<  x.arr_arg() << ".assoc";
-				break;
-			case Array::RASSOC:
-				os <<  x.arr_arg() << ".rassoc";
-				break;
-		}
-		return os << "(" << x.val_arg() << ")";
-	}
-	std::ostream &operator<<(std::ostream &os, const BuiltinFuncs &x) {
-		switch (x.bifunc_oneof_case()) {
-			case BuiltinFuncs::kOs:
-				os << x.os();
-				break;
-			case BuiltinFuncs::kTime:
-				os << x.time();
-				break;
-			case BuiltinFuncs::kArr:
-				os << x.arr();
-				break;
-			case BuiltinFuncs::kMops:
-				os << x.mops();
-				break;
-			case BuiltinFuncs::BIFUNC_ONEOF_NOT_SET:
-				os << "1";
-				break;
-		}
-		return os << "\n";
-	}
-	std::ostream &operator<<(std::ostream &os, const Statement &x) {
-		switch (x.stmt_oneof_case()) {
-			case Statement::kAssignment:
-				os << x.assignment();
-				break;
-			case Statement::kIfelse:
-				os << x.ifelse();
-				break;
-			case Statement::kTernaryStmt:
-				os << x.ternary_stmt();
-				break;
-			case Statement::kBuiltins:
-				os << x.builtins();
-				break;
-			case Statement::kBlockstmt:
-				os << x.blockstmt();
-				break;
-			case Statement::STMT_ONEOF_NOT_SET:
-				break;
-		}
-		return os << "\n";
-	}
-	std::ostream &operator<<(std::ostream &os, const StatementSeq &x) {
-		if (x.statements_size() > 0) {
-			os << "@scope ||= begin\n";
-			for (auto &st : x.statements())
-				os << st;
-			os << "end\n";
-		}
-		return os;
-	}
-	std::ostream &operator<<(std::ostream &os, const Function &x) {
-		return os << "def foo()\n" << x.statements() << "end\n"
-					<< "foo\n";
-	}
+}
 
-// ---------------------------------
+void protoConverter::visit(IfElse const& x)
+{
+	m_output << "if ";
+	visit(x.cond());
+	m_output << "\n";
+	visit(x.if_body());
+	m_output << "\nelse\n";
+	visit(x.else_body());
+	m_output << "\nend\n";
+}
 
-	std::string FunctionToString(const Function &input) {
-		std::ostringstream os;
-		os << input;
-		return os.str();
+void protoConverter::visit(KVPair const& x)
+{
+	m_output << "\"" << removeSpecial(x.key()) << "\"";
+	m_output << " => ";
+	m_output << "\"" << removeSpecial(x.val()) << "\"";
+}
 
+void protoConverter::visit(MathConst const& x)
+{
+	switch (x.math_const()) {
+		case MathConst::PI:
+			m_output << "Math::PI";
+			break;
+		case MathConst::E:
+			m_output << "Math::E";
+			break;
 	}
+}
+
+void protoConverter::visit(MathOps const& x)
+{
+	switch (x.math_op()) {
+		case MathOps::CBRT:
+			m_output << "Math.cbrt("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+		case MathOps::COS:
+			m_output << "Math.cos("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+		case MathOps::ERF:
+			m_output << "Math.erf("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+		case MathOps::ERFC:
+			m_output << "Math.erfc("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+		case MathOps::LOG:
+			m_output << "Math.log("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+		case MathOps::LOG10:
+			m_output << "Math.log10("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+		case MathOps::LOG2:
+			m_output << "Math.log2("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+		case MathOps::SIN:
+			m_output << "Math.sin("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+		case MathOps::SQRT:
+			m_output << "Math.sqrt("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+		case MathOps::TAN:
+			m_output << "Math.tan("
+			visit(x.math_arg());
+			m_output << ")";
+			break;
+	}
+}
+
+void protoConverter::visit(MathType const& x)
+{
+	switch (x.math_arg_oneof_case()) {
+		case MathType::kMathRval:
+			visit(x.math_rval());
+			break;
+		case MathType::kMathConst:
+			visit(x.math_const());
+			break;
+		case MathType::MATH_ARG_ONEOF_NOT_SET:
+			m_output << "1";
+			break;
+	}
+}
+
+void protoConverter::visit(ObjectSpace const& x)
+{
+	switch (x.os_func()) {
+		case ObjectSpace::COUNT:
+			m_output << "ObjectSpace.count_objects";
+			break;
+	}
+	m_output << "(";
+	visit(x.os_arg());
+	m_output << ")" << "\n";
+}
+
+void protoConverter::visit(Rvalue const& x)
+{
+	switch (x.rvalue_oneof_case()) {
+		case Rvalue::kVarref:
+			visit(x.varref());
+			break;
+		case Rvalue::kCons:
+			visit(x.cons());
+			break;
+		case Rvalue::kBinop:
+			visit(x.binop());
+			break;
+		case Rvalue::RVALUE_ONEOF_NOT_SET:
+			m_output << "1";
+			break;
+	}
+}
+
+void protoConverter::visit(Statement const& x)
+{
+	switch (x.stmt_oneof_case()) {
+		case Statement::kAssignment:
+			visit(x.assignment());
+			break;
+		case Statement::kIfelse:
+			visit(x.ifelse());
+			break;
+		case Statement::kTernaryStmt:
+			visit(x.ternary_stmt());
+			break;
+		case Statement::kBuiltins:
+			visit(x.builtins());
+			break;
+		case Statement::kBlockstmt:
+			visit(x.blockstmt());
+			break;
+		case Statement::STMT_ONEOF_NOT_SET:
+			break;
+	}
+	m_output << "\n";
+}
+
+void protoConverter::visit(StatementSeq const& x)
+{
+	if (x.statements_size() > 0) {
+		m_output << "@scope ||= begin\n";
+		for (auto &st : x.statements())
+			visit(st);
+		m_output << "end\n";
+	}
+}
+
+void protoConverter::visit(StringExtNoArg const& x)
+{
+	m_output << "\"" << removeSpecial(x.str_arg()) << "\"";
+	switch (x.str_op()) {
+		case StringExtNoArg::DUMP:
+			m_output << ".dump";
+			break;
+		case StringExtNoArg::STRIP:
+			m_output << ".strip";
+			break;
+		case StringExtNoArg::LSTRIP:
+			m_output << ".lstrip";
+			break;
+		case StringExtNoArg::RSTRIP:
+			m_output << ".rstrip";
+			break;
+		case StringExtNoArg::STRIPE:
+			m_output << ".strip!";
+			break;
+		case StringExtNoArg::LSTRIPE:
+			m_output << ".lstrip!";
+			break;
+		case StringExtNoArg::RSTRIPE:
+			m_output << ".rstrip!";
+			break;
+		case StringExtNoArg::SWAPCASE:
+			m_output << ".swapcase";
+			break;
+		case StringExtNoArg::SWAPCASEE:
+			m_output << ".swapcase!";
+			break;
+		case StringExtNoArg::SQUEEZE:
+			m_output << ".squeeze";
+			break;
+	}
+}
+
+void protoConverter::visit(Ternary const& x)
+{
+	m_output << "(";
+	visit(x.tern_cond());
+	m_output << " ? ";
+	visit(x.t_branch());
+	m_output << " : ";
+	visit(x.f_branch());
+	m_output << ")\n";
+}
+
+void protoConverter::visit(Time const& x)
+{
+	switch (x.t_func()) {
+		case Time::AT:
+			m_output << "Time.at";
+			break;
+		case Time::GM:
+			m_output << "Time.gm";
+			break;
+	}
+	m_output << "(" << (x.t_arg()% 13) << ")" << "\n";
+}
+
+void protoConverter::visit(VarRef const& x)
+{
+	m_output << "var_" << (static_cast<uint32_t>(x.varnum()) % 10);
+}
+
+std::string protoConverter::FunctionToString(Function const& input)
+{
+	visit(input);
+	return m_output.str();
+}
 } // namespace ruby_fuzzer

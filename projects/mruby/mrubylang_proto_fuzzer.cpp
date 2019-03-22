@@ -56,6 +56,7 @@ int FuzzRB(const uint8_t *Data, size_t size) {
 }
 
 DEFINE_PROTO_FUZZER(const Function &function) {
-	auto s = FunctionToString(function);
+	protoConverter converter;
+	auto s = converter.FunctionToString(function);
 	(void)FuzzRB((const uint8_t*)s.data(), s.size());
 }
