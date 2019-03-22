@@ -2,7 +2,7 @@
 
 using namespace ruby_fuzzer;
 
-std::string removeSpecial(const std::string &x)
+std::string protoConverter::removeSpecial(const std::string &x)
 {
 	std::string tmp(x);
 	if (!tmp.empty())
