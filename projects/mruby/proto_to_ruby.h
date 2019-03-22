@@ -38,7 +38,7 @@ namespace ruby_fuzzer {
 		template <class T>
 		void visit(google::protobuf::RepeatedPtrField<T> const& _repeated_field);
 
-		std::string removeSpecial(const std::string &x)
+		std::string removeSpecial(const std::string &x);
 
 		std::ostringstream m_output;
 	};
