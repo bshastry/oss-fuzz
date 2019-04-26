@@ -23,7 +23,10 @@ ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-sco
 
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
 ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,unsigned-integer-overflow,vla-bound,vptr -fno-sanitize-recover=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr"
+
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
+
+ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow -fsanitize-coverage=trace-pc-guard,pc-table,func,trace-cmp"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -43,7 +46,14 @@ ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthrea
 ENV SANITIZER="address"
 ENV FUZZING_ENGINE="libfuzzer"
 
-# Path to fuzzing engine library.
+# DEPRECATED - NEW CODE SHOULD NOT USE THIS. OLD CODE SHOULD STOP. Please use
+# LIB_FUZZING_ENGINE instead.
+# Path to fuzzing engine library to support some old users of
+# LIB_FUZZING_ENGINE.
+ENV LIB_FUZZING_ENGINE_DEPRECATED="/usr/lib/libFuzzingEngine.a"
+
+# Argument passed to compiler to link against fuzzing engine.
+# Defaults to the path, but is "-fsanitize=fuzzer" in libFuzzer builds.
 ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 
 # TODO: remove after tpm2 catchup.
@@ -63,6 +73,7 @@ RUN mkdir honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_libfuzzer compile_honggfuzz srcmap write_labels.py /usr/local/bin/
+COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+    srcmap write_labels.py /usr/local/bin/
 
 CMD ["compile"]

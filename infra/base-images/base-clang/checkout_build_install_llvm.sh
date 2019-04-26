@@ -47,8 +47,8 @@ cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 
-OUR_LLVM_REVISION=342582  # For manual bumping.
-FORCE_OUR_REVISION=0  # To allow for manual downgrades.
+OUR_LLVM_REVISION=356356  # For manual bumping.
+FORCE_OUR_REVISION=1  # To allow for manual downgrades.
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K\d+(?=')" scripts/update.py)
 
 if [ $OUR_LLVM_REVISION -gt $LLVM_REVISION ] || [ $FORCE_OUR_REVISION -ne 0 ]; then
@@ -63,9 +63,12 @@ cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
 
-# Build & install
-mkdir -p $WORK/llvm
-cd $WORK/llvm
+# Build & install. We build clang in two stages because gcc can't build a
+# static version of libcxxabi
+# (see https://github.com/google/oss-fuzz/issues/2164).
+mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
+cd $WORK/llvm-stage1
+
 TARGET_TO_BUILD=
 case $(uname -m) in
     x86_64)
@@ -80,12 +83,21 @@ case $(uname -m) in
         ;;
 esac
 cmake -G "Ninja" \
-      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      $SRC/llvm
+ninja
+
+cd $WORK/llvm-stage2
+export CC=$WORK/llvm-stage1/bin/clang
+export CXX=$WORK/llvm-stage1/bin/clang++
+cmake -G "Ninja" \
+      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       $SRC/llvm
 ninja
 ninja install
-rm -rf $WORK/llvm
+rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
 mkdir -p $WORK/msan
 cd $WORK/msan
@@ -108,6 +120,9 @@ rm -rf $WORK/msan
 
 # Pull trunk libfuzzer.
 cd $SRC && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
+
+# Copy DataFlow scripts for collecting and merging the traces.
+cp libfuzzer/scripts/*_data_flow.py /usr/local/bin/
 
 # Cleanup
 rm -rf $SRC/llvm
