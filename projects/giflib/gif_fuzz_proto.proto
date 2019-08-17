@@ -67,6 +67,10 @@ message CommentExtension {
   repeated SubBlock subs = 1;
 }
 
+message FuzzExtension {
+  required bytes payload = 1;
+}
+
 message Header {
   enum Version {
     ENA = 1;
@@ -84,6 +88,7 @@ message ImageChunk {
     PlainTextExtension plaintext = 2;
     ApplicationExtension appExt = 3;
     CommentExtension comExt = 4;
+    FuzzExtension fuzzExt = 5;
   }
 }
 

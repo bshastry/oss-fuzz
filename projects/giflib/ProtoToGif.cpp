@@ -101,6 +101,9 @@ void ProtoConverter::visit(ImageChunk const &chunk)
 	case ImageChunk::kComExt:
 		visit(chunk.comext());
 		break;
+	case ImageChunk::kFuzzExt:
+		visit(chunk.fuzzext());
+		break;
 	case ImageChunk::CHUNK_ONEOF_NOT_SET:
 		break;
 	}
@@ -216,6 +219,11 @@ void ProtoConverter::visit(ApplicationExtension const &appExt)
 		visit(block);
 	// NULL sub block signals end of image data
 	writeByte(0x00);
+}
+
+void ProtoConverter::visit(FuzzExtension const &fuzzExt)
+{
+	m_output.write(fuzzExt.payload().data(), fuzzExt.payload().size());
 }
 
 void ProtoConverter::visit(Trailer const &)

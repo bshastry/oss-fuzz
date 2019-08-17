@@ -28,6 +28,7 @@ class ProtoConverter
 	void visit(const PlainTextExtension &);
 	void visit(const ApplicationExtension &);
 	void visit(const CommentExtension &);
+	void visit(const FuzzExtension &);
 	void visit(const Trailer &);
 
 	// Utility functions
